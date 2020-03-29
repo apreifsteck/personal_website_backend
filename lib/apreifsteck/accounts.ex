@@ -38,6 +38,17 @@ defmodule APReifseck.Accounts do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
+
+  """
+  def get_user_by(params) do
+    User |> Repo.get_by(params)
+  end
+
+  def get_user_by!(params) do
+    User |> Repo.get_by!(params)
+  end
+
+  @doc """
   Creates a user.
 
   ## Examples

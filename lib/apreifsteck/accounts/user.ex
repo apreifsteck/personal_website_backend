@@ -17,6 +17,7 @@ defmodule APReifseck.Accounts.User do
     user
     |> cast(attrs, [:name, :uname, :email])
     |> validate_required([:name, :uname, :email])
+    |> unique_constraint(:username)
   end
 
   def registration_changeset(user, attrs) do
