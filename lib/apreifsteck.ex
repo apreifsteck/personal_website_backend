@@ -1,6 +1,6 @@
-defmodule APReifseck do
+defmodule APReifsteck do
   @moduledoc """
-  APReifseck keeps the contexts that define your domain
+  APReifsteck keeps the contexts that define your domain
   and business logic.
 
   Contexts are also responsible for managing your data, regardless

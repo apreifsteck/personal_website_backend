@@ -1,15 +1,11 @@
-defmodule APReifseckWeb.ImageControllerTest do
-  use APReifseckWeb.ConnCase
+defmodule APReifsteckWeb.ImageControllerTest do
+  use APReifsteckWeb.ConnCase
 
-  alias APReifseck.Media
-  alias APReifseck.Media.Image
+  alias APReifsteck.Media
+  alias APReifsteck.Media.Image
 
-  @create_attrs %{
-
-  }
-  @update_attrs %{
-
-  }
+  @create_attrs %{}
+  @update_attrs %{}
   @invalid_attrs %{}
 
   def fixture(:image) do

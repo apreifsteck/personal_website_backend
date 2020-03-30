@@ -1,10 +1,10 @@
-defmodule APReifseck.MediaTest do
-  use APReifseck.DataCase
+defmodule APReifsteck.MediaTest do
+  use APReifsteck.DataCase
 
-  alias APReifseck.Media
+  alias APReifsteck.Media
 
   describe "images" do
-    alias APReifseck.Media.Image
+    alias APReifsteck.Media.Image
 
     @valid_attrs %{}
     @update_attrs %{}

@@ -1,8 +1,8 @@
-defmodule APReifseckWeb.UserControllerTest do
-  use APReifseckWeb.ConnCase
+defmodule APReifsteckWeb.UserControllerTest do
+  use APReifsteckWeb.ConnCase
 
-  alias APReifseck.Accounts
-  alias APReifseck.Accounts.User
+  alias APReifsteck.Accounts
+  alias APReifsteck.Accounts.User
 
   @create_attrs %{
     email: "some email",

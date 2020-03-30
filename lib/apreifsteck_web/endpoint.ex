@@ -1,4 +1,4 @@
-defmodule APReifseckWeb.Endpoint do
+defmodule APReifsteckWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :apreifsteck
 
   # The session will be stored in the cookie and signed,
@@ -10,7 +10,7 @@ defmodule APReifseckWeb.Endpoint do
     signing_salt: "ZK98sKXS"
   ]
 
-  socket "/socket", APReifseckWeb.UserSocket,
+  socket "/socket", APReifsteckWeb.UserSocket,
     websocket: true,
     longpoll: false
 
@@ -23,6 +23,10 @@ defmodule APReifseckWeb.Endpoint do
     from: :apreifsteck,
     gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
+
+  # plug Plug.Static,
+  #   at: "/media",
+  #   from: "/uploads/user"
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -42,5 +46,5 @@ defmodule APReifseckWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
   plug CORSPlug
-  plug APReifseckWeb.Router
+  plug APReifsteckWeb.Router
 end

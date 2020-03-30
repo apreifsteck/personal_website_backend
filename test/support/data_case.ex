@@ -1,4 +1,4 @@
-defmodule APReifseck.DataCase do
+defmodule APReifsteck.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -10,7 +10,7 @@ defmodule APReifseck.DataCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use APReifseck.DataCase, async: true`, although
+  by setting `use APReifsteck.DataCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -18,20 +18,20 @@ defmodule APReifseck.DataCase do
 
   using do
     quote do
-      alias APReifseck.Repo
+      alias APReifsteck.Repo
 
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import APReifseck.DataCase
+      import APReifsteck.DataCase
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(APReifseck.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(APReifsteck.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(APReifseck.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(APReifsteck.Repo, {:shared, self()})
     end
 
     :ok

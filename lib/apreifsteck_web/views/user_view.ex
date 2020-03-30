@@ -1,6 +1,6 @@
-defmodule APReifseckWeb.UserView do
-  use APReifseckWeb, :view
-  alias APReifseckWeb.UserView
+defmodule APReifsteckWeb.UserView do
+  use APReifsteckWeb, :view
+  alias APReifsteckWeb.UserView
 
   def render("index.json", %{users: users}) do
     %{data: render_many(users, UserView, "user.json")}

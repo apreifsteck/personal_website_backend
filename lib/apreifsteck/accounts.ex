@@ -1,12 +1,12 @@
-defmodule APReifseck.Accounts do
+defmodule APReifsteck.Accounts do
   @moduledoc """
   The Accounts context.
   """
 
   import Ecto.Query, warn: false
-  alias APReifseck.Repo
+  alias APReifsteck.Repo
 
-  alias APReifseck.Accounts.User
+  alias APReifsteck.Accounts.User
 
   @doc """
   Returns the list of users.

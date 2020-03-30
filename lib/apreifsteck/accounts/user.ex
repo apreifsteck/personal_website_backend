@@ -1,4 +1,4 @@
-defmodule APReifseck.Accounts.User do
+defmodule APReifsteck.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 

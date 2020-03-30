@@ -1,13 +1,23 @@
-defmodule APReifseck.AccountsTest do
-  use APReifseck.DataCase
+defmodule APReifsteck.AccountsTest do
+  use APReifsteck.DataCase
 
-  alias APReifseck.Accounts
+  alias APReifsteck.Accounts
 
   describe "users" do
-    alias APReifseck.Accounts.User
+    alias APReifsteck.Accounts.User
 
-    @valid_attrs %{email: "some email", name: "some name", password_hash: "some password_hash", uname: "some uname"}
-    @update_attrs %{email: "some updated email", name: "some updated name", password_hash: "some updated password_hash", uname: "some updated uname"}
+    @valid_attrs %{
+      email: "some email",
+      name: "some name",
+      password_hash: "some password_hash",
+      uname: "some uname"
+    }
+    @update_attrs %{
+      email: "some updated email",
+      name: "some updated name",
+      password_hash: "some updated password_hash",
+      uname: "some updated uname"
+    }
     @invalid_attrs %{email: nil, name: nil, password_hash: nil, uname: nil}
 
     def user_fixture(attrs \\ %{}) do

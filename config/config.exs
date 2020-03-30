@@ -8,15 +8,15 @@
 use Mix.Config
 
 config :apreifsteck,
-  namespace: APReifseck,
-  ecto_repos: [APReifseck.Repo]
+  namespace: APReifsteck,
+  ecto_repos: [APReifsteck.Repo]
 
 # Configures the endpoint
-config :apreifsteck, APReifseckWeb.Endpoint,
+config :apreifsteck, APReifsteckWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "oqqZfoQ2L7Prw1Vy6StLjpEGDdNlWzaXRzwuR7YmjRkC4NJo7jOYJucJr2tWJc69",
-  render_errors: [view: APReifseckWeb.ErrorView, accepts: ~w(json)],
-  pubsub: [name: APReifseck.PubSub, adapter: Phoenix.PubSub.PG2],
+  render_errors: [view: APReifsteckWeb.ErrorView, accepts: ~w(json)],
+  pubsub: [name: APReifsteck.PubSub, adapter: Phoenix.PubSub.PG2],
   live_view: [signing_salt: "tuhgCOdu"]
 
 # Configures Elixir's Logger

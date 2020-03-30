@@ -1,12 +1,12 @@
-defmodule APReifseckWeb do
+defmodule APReifsteckWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, views, channels and so on.
 
   This can be used in your application as:
 
-      use APReifseckWeb, :controller
-      use APReifseckWeb, :view
+      use APReifsteckWeb, :controller
+      use APReifsteckWeb, :view
 
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
@@ -19,11 +19,11 @@ defmodule APReifseckWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: APReifseckWeb
+      use Phoenix.Controller, namespace: APReifsteckWeb
 
       import Plug.Conn
-      import APReifseckWeb.Gettext
-      alias APReifseckWeb.Router.Helpers, as: Routes
+      import APReifsteckWeb.Gettext
+      alias APReifsteckWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -31,14 +31,14 @@ defmodule APReifseckWeb do
     quote do
       use Phoenix.View,
         root: "lib/apreifsteck_web/templates",
-        namespace: APReifseckWeb
+        namespace: APReifsteckWeb
 
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_flash: 1, get_flash: 2, view_module: 1]
 
-      import APReifseckWeb.ErrorHelpers
-      import APReifseckWeb.Gettext
-      alias APReifseckWeb.Router.Helpers, as: Routes
+      import APReifsteckWeb.ErrorHelpers
+      import APReifsteckWeb.Gettext
+      alias APReifsteckWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -53,7 +53,7 @@ defmodule APReifseckWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import APReifseckWeb.Gettext
+      import APReifsteckWeb.Gettext
     end
   end
 

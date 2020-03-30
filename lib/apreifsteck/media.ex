@@ -1,13 +1,13 @@
-defmodule APReifseck.Media do
+defmodule APReifsteck.Media do
   @moduledoc """
   The Media context.
   """
 
   import Ecto.Query, warn: false
-  alias APReifseck.Repo
+  alias APReifsteck.Repo
 
-  alias APReifseck.Media.Image
-  alias APReifseck.Accounts
+  alias APReifsteck.Media.Image
+  alias APReifsteck.Accounts
 
   @doc """
   Returns the list of images.
@@ -20,6 +20,11 @@ defmodule APReifseck.Media do
   """
   def list_images do
     Repo.all(Image)
+  end
+
+  def list_user_images(uid) do
+    from(v in Image, where: v.user_id == ^uid)
+    |> Repo.all()
   end
 
   @doc """
@@ -50,7 +55,9 @@ defmodule APReifseck.Media do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_image(%Accounts.User{} = user, attrs \\ %{}) do
+  def create_image(%Accounts.User{} = user, attrs \\ %Plug.Upload{}, title \\ nil) do
+    attrs = %{title: title, image: attrs}
+
     %Image{}
     |> Image.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:user, user)

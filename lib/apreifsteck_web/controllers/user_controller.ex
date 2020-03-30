@@ -1,10 +1,10 @@
-defmodule APReifseckWeb.UserController do
-  use APReifseckWeb, :controller
+defmodule APReifsteckWeb.UserController do
+  use APReifsteckWeb, :controller
 
-  alias APReifseck.Accounts
-  alias APReifseck.Accounts.User
+  alias APReifsteck.Accounts
+  alias APReifsteck.Accounts.User
 
-  action_fallback APReifseckWeb.FallbackController
+  action_fallback APReifsteckWeb.FallbackController
 
   def index(conn, _params) do
     users = Accounts.list_users()

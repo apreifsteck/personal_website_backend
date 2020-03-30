@@ -1,5 +1,5 @@
-defmodule APReifseckWeb.ErrorView do
-  use APReifseckWeb, :view
+defmodule APReifsteckWeb.ErrorView do
+  use APReifsteckWeb, :view
 
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.

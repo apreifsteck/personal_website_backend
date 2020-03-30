@@ -1,6 +1,6 @@
-defmodule APReifseckWeb.ImageView do
-  use APReifseckWeb, :view
-  alias APReifseckWeb.ImageView
+defmodule APReifsteckWeb.ImageView do
+  use APReifsteckWeb, :view
+  alias APReifsteckWeb.ImageView
 
   def render("index.json", %{images: images}) do
     %{data: render_many(images, ImageView, "image.json")}
@@ -11,6 +11,6 @@ defmodule APReifseckWeb.ImageView do
   end
 
   def render("image.json", %{image: image}) do
-    %{id: image.id}
+    %{id: image.id, image: image.location}
   end
 end

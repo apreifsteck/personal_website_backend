@@ -1,4 +1,4 @@
-defmodule APReifseckWeb.ConnCase do
+defmodule APReifsteckWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -11,7 +11,7 @@ defmodule APReifseckWeb.ConnCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use APReifseckWeb.ConnCase, async: true`, although
+  by setting `use APReifsteckWeb.ConnCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -21,18 +21,18 @@ defmodule APReifseckWeb.ConnCase do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
-      alias APReifseckWeb.Router.Helpers, as: Routes
+      alias APReifsteckWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
-      @endpoint APReifseckWeb.Endpoint
+      @endpoint APReifsteckWeb.Endpoint
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(APReifseck.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(APReifsteck.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(APReifseck.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(APReifsteck.Repo, {:shared, self()})
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}

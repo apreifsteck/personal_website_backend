@@ -1,4 +1,4 @@
-defmodule APReifsteck.Image do
+defmodule APReifsteck.Uploaders.Image do
   use Arc.Definition
   use Arc.Ecto.Definition
 
@@ -6,6 +6,7 @@ defmodule APReifsteck.Image do
 
   @versions [:original]
 
+  def __storage, do: Arc.Storage.Local
   # To add a thumbnail version:
   # @versions [:original, :thumb]
 

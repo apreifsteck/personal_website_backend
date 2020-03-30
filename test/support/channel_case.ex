@@ -1,4 +1,4 @@
-defmodule APReifseckWeb.ChannelCase do
+defmodule APReifsteckWeb.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -11,7 +11,7 @@ defmodule APReifseckWeb.ChannelCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use APReifseckWeb.ChannelCase, async: true`, although
+  by setting `use APReifsteckWeb.ChannelCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -23,15 +23,15 @@ defmodule APReifseckWeb.ChannelCase do
       use Phoenix.ChannelTest
 
       # The default endpoint for testing
-      @endpoint APReifseckWeb.Endpoint
+      @endpoint APReifsteckWeb.Endpoint
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(APReifseck.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(APReifsteck.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(APReifseck.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(APReifsteck.Repo, {:shared, self()})
     end
 
     :ok
