@@ -1,6 +1,5 @@
 defmodule APReifsteck.Uploaders.Image do
   use Arc.Definition
-  use Arc.Ecto.Definition
 
   # Include ecto support (requires package arc_ecto installed):
 
@@ -26,13 +25,22 @@ defmodule APReifsteck.Uploaders.Image do
   # end
 
   # Override the persisted filenames:
-  # def filename(version, _) do
-  #   version
-  # end
+  def filename(_version, {file, scope}) do
+    file_name = Path.basename(file.file_name, Path.extname(file.file_name))
+    "#{scope.id}_#{file_name}"
+  end
+
+  def filename(%Plug.Upload{} = file, scope) do
+    "#{scope.id}_#{file.filename}"
+  end
 
   # Override the storage directory:
   def storage_dir(_version, {_file, scope}) do
-    "uploads/user/#{scope.id}"
+    if Mix.env() == :test do
+      "uploads/test"
+    else
+      "uploads/user/#{scope.id}"
+    end
   end
 
   # Provide a default URL if there hasn't been a file uploaded

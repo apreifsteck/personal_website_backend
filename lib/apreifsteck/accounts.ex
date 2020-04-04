@@ -79,8 +79,13 @@ defmodule APReifsteck.Accounts do
 
   """
   def update_user(%User{} = user, attrs) do
-    user
-    |> User.changeset(attrs)
+    if Map.has_key?(attrs, :password) do
+      user
+      |> User.registration_changeset(attrs)
+    else
+      user
+      |> User.changeset(attrs)
+    end
     |> Repo.update()
   end
 

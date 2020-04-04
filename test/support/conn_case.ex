@@ -30,6 +30,7 @@ defmodule APReifsteckWeb.ConnCase do
 
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(APReifsteck.Repo)
+    on_exit(fn -> File.rm_rf("uploads/test") end)
 
     unless tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(APReifsteck.Repo, {:shared, self()})

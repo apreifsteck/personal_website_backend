@@ -6,6 +6,7 @@ defmodule APReifsteck.Media do
   import Ecto.Query, warn: false
   alias APReifsteck.Repo
 
+  alias APReifsteck.Uploaders
   alias APReifsteck.Media.Image
   alias APReifsteck.Accounts
 
@@ -55,14 +56,14 @@ defmodule APReifsteck.Media do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_image(%Accounts.User{} = user, attrs \\ %Plug.Upload{}, title \\ nil) do
-    attrs = %{title: title, image: attrs}
-
+  def create_image(%Accounts.User{} = user, attrs \\ %{}) do
     %Image{}
-    |> Image.changeset(attrs)
+    |> Image.changeset(user, attrs)
     |> Ecto.Changeset.put_assoc(:user, user)
     |> Repo.insert()
   end
+
+  # TODO error handling if there is no matching keys and stuff
 
   @doc """
   Updates a image.
@@ -78,7 +79,7 @@ defmodule APReifsteck.Media do
   """
   def update_image(%Image{} = image, attrs) do
     image
-    |> Image.changeset(attrs)
+    |> Image.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -94,7 +95,8 @@ defmodule APReifsteck.Media do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_image(%Image{} = image) do
+  def delete_image(%Accounts.User{} = user, %Image{} = image) do
+    spawn(fn -> Uploaders.Image.delete({image.filename, user}) end)
     Repo.delete(image)
   end
 
@@ -107,7 +109,7 @@ defmodule APReifsteck.Media do
       %Ecto.Changeset{source: %Image{}}
 
   """
-  def change_image(%Image{} = image) do
-    Image.changeset(image, %{})
-  end
+  # def change_image(%Image{} = image) do
+  #   Image.changeset(image, %{})
+  # end
 end

@@ -10,5 +10,7 @@ defmodule APReifsteck.Repo.Migrations.CreateUsers do
 
       timestamps()
     end
+
+    create unique_index(:users, [:uname])
   end
 end

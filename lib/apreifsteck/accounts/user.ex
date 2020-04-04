@@ -8,6 +8,7 @@ defmodule APReifsteck.Accounts.User do
     field :uname, :string
     field :password_hash, :string
     field :password, :string, virtual: true
+    has_many :images, APReifsteck.Media.Image, foreign_key: :id
 
     timestamps()
   end
@@ -16,8 +17,9 @@ defmodule APReifsteck.Accounts.User do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [:name, :uname, :email])
-    |> validate_required([:name, :uname, :email])
-    |> unique_constraint(:username)
+    |> validate_required([:name, :uname])
+    |> validate_length(:uname, min: 1, max: 20)
+    |> unique_constraint(:uname)
   end
 
   def registration_changeset(user, attrs) do
@@ -27,6 +29,7 @@ defmodule APReifsteck.Accounts.User do
     |> validate_required([:password])
     |> validate_length(:password, min: 6, max: 100)
     |> put_pass_hash()
+    |> put_change(:password, nil)
   end
 
   def put_pass_hash(changeset) do

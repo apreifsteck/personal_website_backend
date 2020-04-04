@@ -20,6 +20,6 @@ defmodule APReifsteckWeb.Router do
     pipe_through :api
 
     resources "/users", UserController, only: [:index, :show, :new, :create]
-    resources "/images", ImageController
+    delete "/images", ImageController, :delete
   end
 end

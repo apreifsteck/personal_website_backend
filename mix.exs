@@ -43,7 +43,6 @@ defmodule APReifsteck.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:pbkdf2_elixir, "~> 1.0"},
       {:arc, "~> 0.11.0"},
-      {:arc_ecto, "~> 0.11.3"},
       {:cors_plug, "~> 2.0"}
     ]
   end
