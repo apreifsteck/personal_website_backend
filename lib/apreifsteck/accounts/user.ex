@@ -1,13 +1,15 @@
 defmodule APReifsteck.Accounts.User do
   use Ecto.Schema
+  use Pow.Ecto.Schema
   import Ecto.Changeset
 
   schema "users" do
-    field :email, :string
+    # field :email, :string
     field :name, :string
     field :uname, :string
-    field :password_hash, :string
-    field :password, :string, virtual: true
+    pow_user_fields()
+    # field :password_hash, :string
+    # field :password, :string, virtual: true
     has_many :images, APReifsteck.Media.Image, foreign_key: :id
 
     timestamps()
@@ -16,6 +18,7 @@ defmodule APReifsteck.Accounts.User do
   @doc false
   def changeset(user, attrs) do
     user
+    |> pow_changeset(attrs)
     |> cast(attrs, [:name, :uname, :email])
     |> validate_required([:name, :uname])
     |> validate_length(:uname, min: 1, max: 20)

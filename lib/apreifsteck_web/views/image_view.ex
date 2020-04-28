@@ -11,7 +11,6 @@ defmodule APReifsteckWeb.ImageView do
   end
 
   def render("image.json", %{image: image}) do
-    IO.inspect(image)
     %{id: image.id, filename: image.filename}
   end
 end

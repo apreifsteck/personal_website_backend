@@ -13,7 +13,6 @@ defmodule APReifsteckWeb.ImageController do
   end
 
   def user_index(conn, %{"user_id" => uid}) do
-    IO.inspect(uid)
     images = Media.list_user_images(uid)
     # TODO: render something
     render(conn, "index.json", images: images)
