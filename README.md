@@ -1,7 +1,7 @@
 # APReifsteck
 
 # TODO:
-- Implement JWT auth for users
+- [DONE?] Implement JWT auth for users
 - USERS can only do CRUD on their own RESOURCES
 - make IMAGES a PROTECTED resource
 - IMAGE upload limit on BLOG POSTS
@@ -16,6 +16,6 @@ create table
     userid FK
     image (actual image from arc)
 
-prepackage/transform image data so that the params are what they should be
+[DONE] prepackage/transform image data so that the params are what they should be
 prefix filename to be unique. maybe #userid_#filename
 insert into table after checking for unique constraint

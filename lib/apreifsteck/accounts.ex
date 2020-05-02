@@ -49,24 +49,6 @@ defmodule APReifsteck.Accounts do
   end
 
   @doc """
-  Creates a user.
-
-  ## Examples
-
-      iex> create_user(%{field: value})
-      {:ok, %User{}}
-
-      iex> create_user(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_user(attrs \\ %{}) do
-    %User{}
-    |> User.registration_changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
   Updates a user.
 
   ## Examples
@@ -79,13 +61,9 @@ defmodule APReifsteck.Accounts do
 
   """
   def update_user(%User{} = user, attrs) do
-    if Map.has_key?(attrs, :password) do
-      user
-      |> User.registration_changeset(attrs)
-    else
-      user
-      |> User.changeset(attrs)
-    end
+    #  TODO: implement password changing with POW
+    user
+    |> User.changeset(attrs)
     |> Repo.update()
   end
 

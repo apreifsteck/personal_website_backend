@@ -25,23 +25,23 @@ defmodule APReifsteck.Accounts.User do
     |> unique_constraint(:uname)
   end
 
-  def registration_changeset(user, attrs) do
-    user
-    |> changeset(attrs)
-    |> cast(attrs, [:password])
-    |> validate_required([:password])
-    |> validate_length(:password, min: 6, max: 100)
-    |> put_pass_hash()
-    |> put_change(:password, nil)
-  end
+  # def registration_changeset(user, attrs) do
+  #   user
+  #   |> changeset(attrs)
+  #   |> cast(attrs, [:password])
+  #   |> validate_required([:password])
+  #   |> validate_length(:password, min: 6, max: 100)
+  #   |> put_pass_hash()
+  #   |> put_change(:password, nil)
+  # end
 
-  def put_pass_hash(changeset) do
-    case changeset do
-      %Ecto.Changeset{valid?: true, changes: %{password: pass}} ->
-        put_change(changeset, :password_hash, Pbkdf2.hash_pwd_salt(pass))
+  # def put_pass_hash(changeset) do
+  #   case changeset do
+  #     %Ecto.Changeset{valid?: true, changes: %{password: pass}} ->
+  #       put_change(changeset, :password_hash, Pbkdf2.hash_pwd_salt(pass))
 
-      _ ->
-        changeset
-    end
-  end
+  #     _ ->
+  #       changeset
+  #   end
+  # end
 end

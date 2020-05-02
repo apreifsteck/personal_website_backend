@@ -99,17 +99,4 @@ defmodule APReifsteck.Media do
     spawn(fn -> Uploaders.Image.delete({image.filename, user}) end)
     Repo.delete(image)
   end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking image changes.
-
-  ## Examples
-
-      iex> change_image(image)
-      %Ecto.Changeset{source: %Image{}}
-
-  """
-  # def change_image(%Image{} = image) do
-  #   Image.changeset(image, %{})
-  # end
 end
