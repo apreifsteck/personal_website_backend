@@ -21,12 +21,14 @@ defmodule APReifsteckWeb.SessionControllerTest do
   end
 
   describe "create/2" do
-    @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password}}
-    @invalid_params %{"user" => %{"email" => "test@example.com", "password" => "invalid"}}
+    # @valid_params %{"user" => %{"email" => "test@example.com", "password" => @password}}
+    @valid_params %{
+      "user" => %{"uname" => "testing", "password" => @password}
+    }
+    @invalid_params %{"user" => %{"uname" => "testing", "password" => "invalid"}}
 
     test "with valid params", %{conn: conn} do
       conn = post(conn, Routes.session_path(conn, :create, @valid_params))
-
       assert json = json_response(conn, 200)
       assert json["data"]["access_token"]
       assert json["data"]["renewal_token"]
