@@ -4,7 +4,7 @@ defmodule APReifsteck.Accounts.User do
   use Pow.Ecto.Schema,
     user_id_field: :uname
 
-  import Ecto.Changeset
+  import(Ecto.Changeset)
 
   schema "users" do
     field :email, :string
@@ -22,6 +22,7 @@ defmodule APReifsteck.Accounts.User do
   def changeset(user, attrs) do
     user
     |> maybe_change_password(attrs)
+    # |> pow_changeset(attrs)
     |> cast(attrs, [:name, :uname, :email])
     |> validate_required([:name, :uname])
     |> validate_length(:uname, min: 1, max: 20)
@@ -30,6 +31,11 @@ defmodule APReifsteck.Accounts.User do
 
   defp maybe_change_password(user, attrs) do
     case attrs do
+      # You need both because it seems like the session controller converts them to atoms
+      # but the user and registration controller do not
+      %{password: _} ->
+        pow_changeset(user, attrs)
+
       %{"password" => _} ->
         pow_changeset(user, attrs)
 
