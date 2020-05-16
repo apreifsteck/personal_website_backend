@@ -73,20 +73,32 @@ defmodule APReifsteck.PostTest do
   # this is supposed to return all posts in a series of edits, both forwards and backwards histories.
   # guarantee that the first post in the list is the root post
   # otherwise, posts are in no particular order
-  describe "get_post_history" do
+  describe "helper functions" do
     setup do
       user = user_fixture()
       titles = ~w(one two three)
       bodies = ~w(bodyOne bodyTwo bodyThree)
 
-      posts =
-        for p <- Enum.zip(titles, bodies),
-            do:
-              %{"title" => elem(p, 0), "body" => elem(p, 1), "enable_comments" => false}
-              |> Media.create_post(user)
+      attrs =
+        for p <- Enum.zip(titles, bodies) do
+          %{"title" => elem(p, 0), "body" => elem(p, 1), "enable_comments" => false}
+        end
+
+      # I realize this is awful, but it's what I had to do without defining a ton of extra functions
+      posts = []
+      {:ok, root_post} = Media.create_post(@valid_attrs, user)
+      [head | tail] = attrs
+      {:ok, post} = Media.update_post(root_post.id, user, head)
+      posts = List.insert_at(posts, 0, post)
+      [head | tail] = tail
+      {:ok, post} = Media.update_post(post.id, user, head)
+      posts = List.insert_at(posts, 1, post)
+      [head | tail] = tail
+      {:ok, post} = Media.update_post(post.id, user, head)
+      posts = List.insert_at(posts, 2, post)
 
       # I tested it and these get returned in order
-      {:ok, user: user, posts: posts}
+      {:ok, user: user, posts: posts, root_post: root_post}
     end
 
     test "get_post_history(root_post) returns all posts", %{user: user, posts: posts} do
@@ -103,6 +115,18 @@ defmodule APReifsteck.PostTest do
       assert head = Enum.fetch(post_history, 0)
       assert Enum.count(post_history) == Enum.count(posts)
     end
+
+    test "get_latest_edit gets last edit", %{user: user, posts: posts, root_post: root_post} do
+      [head | [second | tail]] = posts
+      [tail | _] = tail
+      assert Media.get_latest_edit(head).id == tail.id
+      assert Media.get_latest_edit(second).id == tail.id
+      assert Media.get_latest_edit(tail).id == tail.id
+      assert Media.get_latest_edit(root_post).id == tail.id
+
+      {:ok, new_post} = Media.create_post(@valid_attrs, user)
+      assert Media.get_latest_edit(new_post).id == new_post.id
+    end
   end
 
   describe "update_post" do
@@ -116,7 +140,7 @@ defmodule APReifsteck.PostTest do
         "enable_comments" => false
       }
 
-      edit = Media.update_post(root_post.id, user, update_attrs)
+      {:ok, edit} = Media.update_post(root_post.id, user, update_attrs)
 
       {:ok, user: user, post: root_post, edit: edit}
     end
@@ -124,7 +148,7 @@ defmodule APReifsteck.PostTest do
     # I want to store the edit history of posts
     test "editing a post with valid attrs updates the post", %{user: user, post: post, edit: edit} do
       assert post.id != edit.id
-      assert edit.prev_hist == post.id
+      assert edit.root_id == post.id
       assert edit.title != post.title
       assert edit.body != post.body
     end
@@ -135,11 +159,24 @@ defmodule APReifsteck.PostTest do
         "title" => "an even more different title"
       }
 
-      another_edit = Media.update_post(edit.id, user, update_attrs)
+      # Post edits have one root node, and the edits are leaves.
+      # You can order them either by their insert date or id, both are monotomically increasing.
+
+      {:ok, another_edit} = Media.update_post(edit.id, user, update_attrs)
       assert another_edit.body == edit.body
-      assert another_edit.prev_hist == edit.id
-      assert another_edit.title != edit.title
-      assert edit.prev_hist == post.id
+      assert another_edit.root_id == post.id
+      assert another_edit.title == update_attrs["title"]
+      assert edit.root_id == post.id
+
+      # Check to make sure the associations load correctly
+      preloaded_post =
+        post
+        |> Repo.preload([:children, :root])
+
+      assert preloaded_post.root == nil
+      assert Enum.count(preloaded_post.children) == 2
+      assert Enum.find(preloaded_post.children, nil, fn x -> x.id == edit.id end) != nil
+      assert Enum.find(preloaded_post.children, nil, fn x -> x.id == another_edit.id end) != nil
     end
 
     test "cannot edit a post that has already had an edit done", %{
@@ -180,10 +217,10 @@ defmodule APReifsteck.PostTest do
 
   describe "delete_post" do
     # should trigger a cascade delete
-    test "head post is the only one allowed to be deleted", %{user: user, posts: posts} do
+    test "root post is the only one allowed to be deleted", %{user: user, posts: posts} do
       [head | [middle | last]] = posts
 
-      assert {:error, "you can only delete posts from the most recent edit"} =
+      assert {:error, "you can only delete posts from the root post"} =
                Media.delete_post(last.id, user)
     end
 

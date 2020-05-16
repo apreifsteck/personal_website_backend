@@ -135,18 +135,46 @@ defmodule APReifsteck.Media do
   end
 
   def delete_post(id, user) do
-    nil
+  end
+
+  defp get_root_post(post) do
+  end
+
+  def get_latest_edit(post) when is_struct(post) do
+    cond do
+      root = Repo.preload(post, [:root]).root ->
+        # This is one of the children
+        Repo.preload(root, [:children]).children
+
+      root = Repo.preload(post, [:children]) ->
+        # The root has children
+        root.children
+
+      true ->
+        # This is the root, but it has no children
+        post
+    end
+    |> Enum.max_by(
+      fn child -> child.id end,
+      fn -> post end
+    )
+  end
+
+  def get_latest_edit(id) when is_integer(id) do
+    Repo.get!(Post, id)
+    |> get_latest_edit()
   end
 
   def update_post(id, user, attrs) do
+    latest_post_id = get_latest_edit(id).id
+
     with %Post{} = post <- get_post(id, user),
-         nil <- Repo.preload(post, :child).child,
-         {:ok, edited_post} <-
+         {:ok, %Post{}} = result when id == latest_post_id <-
            post
-           |> Repo.preload([:user])
+           |> Repo.preload([:user, :root])
            |> Post.create_edit(attrs)
            |> Repo.insert() do
-      edited_post
+      result
     else
       {:error, %Ecto.Changeset{} = changest} ->
         {:error, changest.errors}
