@@ -1,4 +1,4 @@
-defmodule APReifsteck.MediaTest do
+defmodule APReifsteck.ImageTest do
   use APReifsteck.DataCase, async: true
 
   alias APReifsteck.Media

@@ -12,6 +12,7 @@ defmodule APReifsteck.Accounts.User do
     field :uname, :string
     pow_user_fields()
     has_many :images, APReifsteck.Media.Image, foreign_key: :id
+    has_many :posts, APReifsteck.Media.Post, foreign_key: :user_id
 
     timestamps()
   end
@@ -22,7 +23,6 @@ defmodule APReifsteck.Accounts.User do
   def changeset(user, attrs) do
     user
     |> maybe_change_password(attrs)
-    # |> pow_changeset(attrs)
     |> cast(attrs, [:name, :uname, :email])
     |> validate_required([:name, :uname])
     |> validate_length(:uname, min: 1, max: 20)
@@ -33,6 +33,8 @@ defmodule APReifsteck.Accounts.User do
     case attrs do
       # You need both because it seems like the session controller converts them to atoms
       # but the user and registration controller do not
+      # EDIT: could also just be how I have the insert defined in the test code.
+      # TODO: possibly clean up later, not a high priority
       %{password: _} ->
         pow_changeset(user, attrs)
 
@@ -43,4 +45,9 @@ defmodule APReifsteck.Accounts.User do
         change(user, password_hash: user.password_hash)
     end
   end
+
+  # TODO: add email validation
+  # defp validate_email(changeset) do
+  # case(Pow.Ecto.Schema.Changeset.validate_email(changeset["email"]))
+  # end
 end
