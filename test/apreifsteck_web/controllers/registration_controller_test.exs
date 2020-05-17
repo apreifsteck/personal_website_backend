@@ -33,6 +33,7 @@ defmodule APReifsteckWeb.RegistrationControllerTest do
       assert json["error"]["message"] == "Couldn't create user"
       assert json["error"]["status"] == 500
       assert json["error"]["errors"]["password_confirmation"] == ["does not match confirmation"]
+      IO.inspect(json["error"])
       assert json["error"]["errors"]["email"] == ["has invalid format"]
     end
   end

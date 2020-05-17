@@ -44,7 +44,8 @@ defmodule APReifsteck.MixProject do
       {:pbkdf2_elixir, "~> 1.0"},
       {:arc, "~> 0.11.0"},
       {:cors_plug, "~> 2.0"},
-      {:pow, "~> 1.0.20"}
+      {:pow, "~> 1.0.20"},
+      {:html_sanitize_ex, "~> 1.3.0-rc3"}
     ]
   end
 

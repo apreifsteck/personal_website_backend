@@ -8,6 +8,7 @@ defmodule APReifsteck.Media do
 
   alias APReifsteck.Uploaders
   alias APReifsteck.Media.Image
+  alias APReifsteck.Media.Post
   alias APReifsteck.Accounts
 
   @doc """
@@ -98,5 +99,101 @@ defmodule APReifsteck.Media do
   def delete_image(%Accounts.User{} = user, %Image{} = image) do
     spawn(fn -> Uploaders.Image.delete({image.filename, user}) end)
     Repo.delete(image)
+  end
+
+  ############ POST FUNCTIONALITY ############
+  def list_posts(user) do
+    from(p in Post, where: p.user_id == ^user.id)
+    |> Repo.all()
+  end
+
+  # TODO: sanatize the HTML in here before inserting
+  def create_post(params, user) do
+    %Post{}
+    |> Post.changeset(params)
+    |> Ecto.Changeset.put_assoc(:user, user)
+    |> Repo.insert()
+  end
+
+  def get_post(id, user) do
+    post =
+      from(p in Post,
+        where: p.id == ^id and p.user_id == ^user.id
+      )
+      |> Repo.one()
+
+    case post do
+      nil ->
+        {:error, "must ask for post ID of a post from the given user"}
+
+      _ ->
+        post
+    end
+  end
+
+  def get_post_history(id, user) do
+  end
+
+  def delete_post(id, user) do
+    with %Post{root_id: root_id} = post <- get_post(id, user),
+         {:ok, %Post{}} = result when is_nil(root_id) <- Repo.delete(post) do
+      result
+    else
+      {:error, %Ecto.Changeset{} = changest} ->
+        {:error, changest.errors}
+
+      {:error, "must ask for post ID of a post from the given user"} = error ->
+        error
+
+      _ ->
+        {:error, "you can only delete posts from the root post"}
+    end
+  end
+
+  def get_latest_edit(post) when is_struct(post) do
+    cond do
+      root = Repo.preload(post, [:root]).root ->
+        # This is one of the children
+        Repo.preload(root, [:children]).children
+
+      root = Repo.preload(post, [:children]) ->
+        # The root has children
+        root.children
+
+      true ->
+        # This is the root, but it has no children
+        post
+    end
+    |> Enum.max_by(
+      fn child -> child.id end,
+      fn -> post end
+    )
+  end
+
+  def get_latest_edit(id) when is_integer(id) do
+    Repo.get!(Post, id)
+    |> get_latest_edit()
+  end
+
+  def update_post(id, user, attrs) do
+    latest_post_id = get_latest_edit(id).id
+
+    with %Post{} = post <- get_post(id, user),
+         {:ok, %Post{}} = result when id == latest_post_id <-
+           post
+           |> Repo.preload([:user, :root])
+           |> Post.create_edit(attrs)
+           |> Repo.insert() do
+      result
+    else
+      {:error, %Ecto.Changeset{} = changest} ->
+        {:error, changest.errors}
+
+      {:error, "must ask for post ID of a post from the given user"} = error ->
+        error
+
+      _ ->
+        {:error, "may only edit the latest version of the post"}
+    end
   end
 end

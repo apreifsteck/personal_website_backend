@@ -2,7 +2,7 @@ defmodule APReifsteck.Accounts do
   @moduledoc """
   The Accounts context.
   """
-
+  # TODO: users should be protected by admin access
   import Ecto.Query, warn: false
   alias APReifsteck.Repo
 

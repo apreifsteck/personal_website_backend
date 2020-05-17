@@ -5,12 +5,13 @@ defmodule APReifsteck.Repo.Migrations.CreateUsers do
     create table(:users) do
       add(:name, :string, null: false)
       add(:uname, :string, null: false)
-      add(:email, :string)
+      add(:email, :string, null: false)
       add(:password_hash, :string)
 
       timestamps()
     end
 
     create unique_index(:users, [:uname])
+    create unique_index(:users, [:email])
   end
 end

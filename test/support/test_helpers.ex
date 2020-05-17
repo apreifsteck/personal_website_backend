@@ -1,20 +1,45 @@
 defmodule APReifsteck.TestHelpers do
   alias APReifsteck.{
     Accounts,
-    Media
+    Accounts.User,
+    Media,
+    Repo
   }
 
   def user_fixture(attrs \\ %{}) do
-    {:ok, user} =
-      attrs
-      |> Enum.into(%{
-        name: "Some User",
-        uname: "user#{System.unique_integer([:positive])}",
-        password: attrs[:password] || "supersecret"
+    user =
+      %User{}
+      |> User.changeset(%{
+        name: "Test Testman",
+        uname: "testing",
+        email: "test@example.com",
+        password: "secretpassword",
+        password_confirmation: "secretpassword"
       })
-      |> Accounts.create_user()
+      |> Repo.insert!()
 
-    user
+    Map.replace!(user, :password, nil)
+  end
+
+  defp random_string(length) do
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
+  end
+
+  def random_user(attrs \\ %{}) do
+    password = random_string(14)
+
+    user =
+      %User{}
+      |> User.changeset(%{
+        name: random_string(12),
+        uname: random_string(8),
+        email: random_string(12) <> "@example.com",
+        password: password,
+        password_confirmation: password
+      })
+      |> Repo.insert!()
+
+    Map.replace!(user, :password, nil)
   end
 
   def image_fixture(user, attrs \\ %{}) do
