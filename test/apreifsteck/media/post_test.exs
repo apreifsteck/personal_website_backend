@@ -28,7 +28,7 @@ defmodule APReifsteck.PostTest do
     end
 
     test "create post with invalid attrs returns an error", %{user: user} do
-      assert false
+      assert {:error, %Ecto.Changeset{}} = Media.create_post(@invalid_attrs, user)
     end
 
     test "creating a post with invalid html will sanatize it", %{user: user} do
@@ -101,20 +101,20 @@ defmodule APReifsteck.PostTest do
       {:ok, user: user, posts: posts, root_post: root_post}
     end
 
-    test "get_post_history(root_post) returns all posts", %{user: user, posts: posts} do
-      [root_post | tail] = posts
-      assert Media.get_post_history(root_post.id, user) |> Enum.count() == Enum.count(posts)
-    end
+    # test "get_post_history(root_post) returns all posts", %{user: user, posts: posts} do
+    #   [root_post | tail] = posts
+    #   assert Media.get_post_history(root_post.id, user) |> Enum.count() == Enum.count(posts)
+    # end
 
-    test "get_post_history(child) returns all posts, with the root post in front", %{
-      user: user,
-      posts: posts
-    } do
-      [head | [second | tail]] = posts
-      post_history = Media.get_post_history(second.id, user)
-      assert head = Enum.fetch(post_history, 0)
-      assert Enum.count(post_history) == Enum.count(posts)
-    end
+    # test "get_post_history(child) returns all posts, with the root post in front", %{
+    #   user: user,
+    #   posts: posts
+    # } do
+    #   [head | [second | tail]] = posts
+    #   post_history = Media.get_post_history(second.id, user)
+    #   assert head = Enum.fetch(post_history, 0)
+    #   assert Enum.count(post_history) == Enum.count(posts)
+    # end
 
     test "get_latest_edit gets last edit", %{user: user, posts: posts, root_post: root_post} do
       [head | [second | tail]] = posts
@@ -141,7 +141,6 @@ defmodule APReifsteck.PostTest do
       }
 
       {:ok, edit} = Media.update_post(root_post.id, user, update_attrs)
-
       {:ok, user: user, post: root_post, edit: edit}
     end
 
@@ -216,12 +215,39 @@ defmodule APReifsteck.PostTest do
   end
 
   describe "delete_post" do
+    setup do
+      user = user_fixture()
+      titles = ~w(one two three)
+      bodies = ~w(bodyOne bodyTwo bodyThree)
+
+      attrs =
+        for p <- Enum.zip(titles, bodies) do
+          %{"title" => elem(p, 0), "body" => elem(p, 1), "enable_comments" => false}
+        end
+
+      # I realize this is awful, but it's what I had to do without defining a ton of extra functions
+      posts = []
+      {:ok, root_post} = Media.create_post(@valid_attrs, user)
+      [head | tail] = attrs
+      {:ok, post} = Media.update_post(root_post.id, user, head)
+      posts = List.insert_at(posts, 0, post)
+      [head | tail] = tail
+      {:ok, post} = Media.update_post(post.id, user, head)
+      posts = List.insert_at(posts, 1, post)
+      [head | tail] = tail
+      {:ok, post} = Media.update_post(post.id, user, head)
+      posts = List.insert_at(posts, 2, post)
+
+      # I tested it and these get returned in order
+      {:ok, user: user, posts: posts, root_post: root_post}
+    end
+
     # should trigger a cascade delete
     test "root post is the only one allowed to be deleted", %{user: user, posts: posts} do
       [head | [middle | last]] = posts
 
       assert {:error, "you can only delete posts from the root post"} =
-               Media.delete_post(last.id, user)
+               Media.delete_post(middle.id, user)
     end
 
     test "users can only delete their own posts", %{user: user, posts: posts} do
@@ -235,16 +261,20 @@ defmodule APReifsteck.PostTest do
 
       {:ok, another_post} = Media.create_post(another_post, other_user)
 
-      assert {:error, "a user can only delete their own posts"} =
+      assert {:error, "must ask for post ID of a post from the given user"} =
                Media.delete_post(another_post.id, user)
     end
 
-    test "deleting root post does a cascading delete on edits", %{user: user, posts: posts} do
-      [root | [branch | leaf]] = posts
-      assert {:ok} = Media.delete_post(root.id, user)
-      assert nil = Repo.get(Post, root.id)
-      assert nil = Repo.get(Post, branch.id)
-      assert nil = Repo.get(Post, leaf.id)
+    test "deleting root post does a cascading delete on edits", %{
+      user: user,
+      posts: posts,
+      root_post: root_post
+    } do
+      [head | [branch | leaf]] = posts
+      assert {:ok, root_post} = Media.delete_post(root_post.id, user)
+      assert Repo.get(Post, head.id) == nil
+      assert Repo.get(Post, branch.id) == nil
+      assert Repo.get(Post, hd(leaf).id) == nil
     end
   end
 end

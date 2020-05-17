@@ -135,9 +135,19 @@ defmodule APReifsteck.Media do
   end
 
   def delete_post(id, user) do
-  end
+    with %Post{root_id: root_id} = post <- get_post(id, user),
+         {:ok, %Post{}} = result when is_nil(root_id) <- Repo.delete(post) do
+      result
+    else
+      {:error, %Ecto.Changeset{} = changest} ->
+        {:error, changest.errors}
 
-  defp get_root_post(post) do
+      {:error, "must ask for post ID of a post from the given user"} = error ->
+        error
+
+      _ ->
+        {:error, "you can only delete posts from the root post"}
+    end
   end
 
   def get_latest_edit(post) when is_struct(post) do

@@ -35,8 +35,6 @@ defmodule APReifsteck.Media.Post do
   end
 
   def create_edit(post, attrs) do
-    # IO.inspect(post)
-
     changeset =
       %Post{}
       |> changeset(%{
