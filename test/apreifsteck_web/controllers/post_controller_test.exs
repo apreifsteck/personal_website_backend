@@ -4,12 +4,8 @@ defmodule APReifsteckWeb.PostControllerTest do
   alias APReifsteck.Media
   alias APReifsteck.Media.Post
 
-  @create_attrs %{
-
-  }
-  @update_attrs %{
-
-  }
+  @create_attrs %{}
+  @update_attrs %{}
   @invalid_attrs %{}
 
   def fixture(:post) do
@@ -22,7 +18,7 @@ defmodule APReifsteckWeb.PostControllerTest do
   end
 
   describe "index" do
-    test "lists all posts", %{conn: conn} do
+    test "lists all posts for a user", %{conn: conn} do
       conn = get(conn, Routes.post_path(conn, :index))
       assert json_response(conn, 200)["data"] == []
     end

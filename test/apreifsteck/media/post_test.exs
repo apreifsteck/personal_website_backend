@@ -3,7 +3,6 @@ defmodule APReifsteck.PostTest do
 
   alias APReifsteck.Media
   alias APReifsteck.Repo
-  alias APReifsteck.Accounts.User
 
   alias APReifsteck.Media.Post
 
@@ -19,6 +18,10 @@ defmodule APReifsteck.PostTest do
   }
 
   describe "create_post" do
+    @malicious_attrs %{
+      "title" => "I'm a sneaky bastard",
+      "body" => "<h1>Hello <script>World!</script></h1>"
+    }
     setup do
       {:ok, user: user_fixture()}
     end
@@ -32,7 +35,8 @@ defmodule APReifsteck.PostTest do
     end
 
     test "creating a post with invalid html will sanatize it", %{user: user} do
-      assert false
+      assert {:ok, %Post{} = post} = Media.create_post(@malicious_attrs, user)
+      assert post.body == "<h1>Hello World!</h1>"
     end
   end
 
@@ -44,8 +48,7 @@ defmodule APReifsteck.PostTest do
     end
 
     test "get a post that the user has created returns the post", %{user: user, post: post} do
-      fetched_post = Media.get_post(post.id, user)
-      assert fetched_post = post
+      assert Media.get_post(post.id, user).id == post.id
     end
 
     test "get_post returns only one post when there are multiple", %{user: user, post: post} do
@@ -93,28 +96,13 @@ defmodule APReifsteck.PostTest do
       [head | tail] = tail
       {:ok, post} = Media.update_post(post.id, user, head)
       posts = List.insert_at(posts, 1, post)
-      [head | tail] = tail
+      [head | _] = tail
       {:ok, post} = Media.update_post(post.id, user, head)
       posts = List.insert_at(posts, 2, post)
 
       # I tested it and these get returned in order
       {:ok, user: user, posts: posts, root_post: root_post}
     end
-
-    # test "get_post_history(root_post) returns all posts", %{user: user, posts: posts} do
-    #   [root_post | tail] = posts
-    #   assert Media.get_post_history(root_post.id, user) |> Enum.count() == Enum.count(posts)
-    # end
-
-    # test "get_post_history(child) returns all posts, with the root post in front", %{
-    #   user: user,
-    #   posts: posts
-    # } do
-    #   [head | [second | tail]] = posts
-    #   post_history = Media.get_post_history(second.id, user)
-    #   assert head = Enum.fetch(post_history, 0)
-    #   assert Enum.count(post_history) == Enum.count(posts)
-    # end
 
     test "get_latest_edit gets last edit", %{user: user, posts: posts, root_post: root_post} do
       [head | [second | tail]] = posts
@@ -145,7 +133,7 @@ defmodule APReifsteck.PostTest do
     end
 
     # I want to store the edit history of posts
-    test "editing a post with valid attrs updates the post", %{user: user, post: post, edit: edit} do
+    test "editing a post with valid attrs updates the post", %{post: post, edit: edit} do
       assert post.id != edit.id
       assert edit.root_id == post.id
       assert edit.title != post.title
@@ -180,8 +168,7 @@ defmodule APReifsteck.PostTest do
 
     test "cannot edit a post that has already had an edit done", %{
       user: user,
-      post: post,
-      edit: edit
+      post: post
     } do
       # the intention of this is that you cannot sneakily edit a post with an edit already, you have
       # to make a new edit that becomes part of the history
@@ -195,14 +182,13 @@ defmodule APReifsteck.PostTest do
 
     test "editing a post with invalid attrs does not update the post", %{
       user: user,
-      post: post,
       edit: edit
     } do
       assert {:error, errors} = Media.update_post(edit.id, user, @invalid_attrs)
       assert errors != []
     end
 
-    test "cannot edit another user's post", %{user: user, post: post, edit: edit} do
+    test "cannot edit another user's post", %{post: post} do
       user2 = random_user()
 
       update_attrs = %{
@@ -234,7 +220,7 @@ defmodule APReifsteck.PostTest do
       [head | tail] = tail
       {:ok, post} = Media.update_post(post.id, user, head)
       posts = List.insert_at(posts, 1, post)
-      [head | tail] = tail
+      [head | _tail] = tail
       {:ok, post} = Media.update_post(post.id, user, head)
       posts = List.insert_at(posts, 2, post)
 
@@ -244,13 +230,13 @@ defmodule APReifsteck.PostTest do
 
     # should trigger a cascade delete
     test "root post is the only one allowed to be deleted", %{user: user, posts: posts} do
-      [head | [middle | last]] = posts
+      [_head | [middle | _last]] = posts
 
       assert {:error, "you can only delete posts from the root post"} =
                Media.delete_post(middle.id, user)
     end
 
-    test "users can only delete their own posts", %{user: user, posts: posts} do
+    test "users can only delete their own posts", %{user: user} do
       other_user = random_user()
 
       another_post = %{

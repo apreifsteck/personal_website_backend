@@ -21,7 +21,6 @@ defmodule APReifsteckWeb.UserControllerTest do
     config = [otp_app: :apreifsteck]
     post(conn, Routes.registration_path(conn, :create, @create_params))
     user = Accounts.get_user_by!(uname: "test")
-    # IO.inspect(user)
     conn = APReifsteckWeb.APIAuthPlug.do_create(conn, user, config)
 
     {:ok, conn: put_req_header(conn, "accept", "application/json"), user: user}
@@ -65,7 +64,7 @@ defmodule APReifsteckWeb.UserControllerTest do
   describe "update user" do
     test "renders user when data is valid", %{
       conn: conn,
-      user: %User{id: id, password_hash: hash} = user
+      user: %User{id: id, password_hash: _hash} = user
     } do
       resp_conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
 

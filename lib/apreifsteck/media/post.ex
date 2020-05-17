@@ -30,6 +30,7 @@ defmodule APReifsteck.Media.Post do
   def changeset(post, attrs) do
     post
     |> cast(attrs, [:title, :body, :enable_comments])
+    |> update_change(:body, fn body_text -> HtmlSanitizeEx.markdown_html(body_text) end)
     |> assoc_constraint(:user)
     |> validate_required([:title, :body])
   end
