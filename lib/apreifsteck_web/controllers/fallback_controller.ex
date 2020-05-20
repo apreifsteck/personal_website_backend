@@ -19,4 +19,11 @@ defmodule APReifsteckWeb.FallbackController do
     |> put_view(APReifsteckWeb.ErrorView)
     |> render(:"404")
   end
+
+  def call(conn, {:error, messsage}) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(APReifsteckWeb.ErrorView)
+    |> render("error.json", messsage)
+  end
 end

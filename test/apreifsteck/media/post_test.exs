@@ -40,6 +40,8 @@ defmodule APReifsteck.PostTest do
     end
   end
 
+  # TODO: write tests for list_post
+
   describe "get_post" do
     setup do
       user = user_fixture()
@@ -76,6 +78,21 @@ defmodule APReifsteck.PostTest do
   # this is supposed to return all posts in a series of edits, both forwards and backwards histories.
   # guarantee that the first post in the list is the root post
   # otherwise, posts are in no particular order
+
+  def batch_update(id, user, attrs_list) when attrs_list != [] do
+    [head | tail] = attrs_list
+    {:ok, post} = Media.update_post(id, user, head)
+    batch_update(post.id, user, tail)
+  end
+
+  def batch_update(id, _user, _attrs_list) do
+    post = Repo.get!(Post, id)
+    query = from c in Post, order_by: c.id
+
+    # Get all the edits of a post in ascending order. Does not include root
+    Repo.preload(post, root: [children: {query, []}]).root.children
+  end
+
   describe "helper functions" do
     setup do
       user = user_fixture()
@@ -87,18 +104,8 @@ defmodule APReifsteck.PostTest do
           %{"title" => elem(p, 0), "body" => elem(p, 1), "enable_comments" => false}
         end
 
-      # I realize this is awful, but it's what I had to do without defining a ton of extra functions
-      posts = []
       {:ok, root_post} = Media.create_post(@valid_attrs, user)
-      [head | tail] = attrs
-      {:ok, post} = Media.update_post(root_post.id, user, head)
-      posts = List.insert_at(posts, 0, post)
-      [head | tail] = tail
-      {:ok, post} = Media.update_post(post.id, user, head)
-      posts = List.insert_at(posts, 1, post)
-      [head | _] = tail
-      {:ok, post} = Media.update_post(post.id, user, head)
-      posts = List.insert_at(posts, 2, post)
+      posts = batch_update(root_post.id, user, attrs)
 
       # I tested it and these get returned in order
       {:ok, user: user, posts: posts, root_post: root_post}
@@ -176,8 +183,12 @@ defmodule APReifsteck.PostTest do
         "title" => "an even more different title"
       }
 
+      latest_edit = Media.get_latest_edit(post)
+
       assert {:error, "may only edit the latest version of the post"} =
                Media.update_post(post.id, user, update_attrs)
+
+      assert latest_edit.id == Media.get_latest_edit(post).id
     end
 
     test "editing a post with invalid attrs does not update the post", %{
@@ -211,18 +222,8 @@ defmodule APReifsteck.PostTest do
           %{"title" => elem(p, 0), "body" => elem(p, 1), "enable_comments" => false}
         end
 
-      # I realize this is awful, but it's what I had to do without defining a ton of extra functions
-      posts = []
       {:ok, root_post} = Media.create_post(@valid_attrs, user)
-      [head | tail] = attrs
-      {:ok, post} = Media.update_post(root_post.id, user, head)
-      posts = List.insert_at(posts, 0, post)
-      [head | tail] = tail
-      {:ok, post} = Media.update_post(post.id, user, head)
-      posts = List.insert_at(posts, 1, post)
-      [head | _tail] = tail
-      {:ok, post} = Media.update_post(post.id, user, head)
-      posts = List.insert_at(posts, 2, post)
+      posts = batch_update(root_post.id, user, attrs)
 
       # I tested it and these get returned in order
       {:ok, user: user, posts: posts, root_post: root_post}

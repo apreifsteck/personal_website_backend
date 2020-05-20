@@ -20,6 +20,7 @@ defmodule APReifsteckWeb.ConnCase do
   using do
     quote do
       # Import conveniences for testing with connections
+      import APReifsteck.TestHelpers
       use Phoenix.ConnTest
       alias APReifsteckWeb.Router.Helpers, as: Routes
 

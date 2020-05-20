@@ -13,4 +13,11 @@ defmodule APReifsteckWeb.ErrorView do
   def template_not_found(template, _assigns) do
     %{errors: %{detail: Phoenix.Controller.status_message_from_template(template)}}
   end
+
+  def render("error.json", message) do
+    # When encoded, the changeset returns its errors
+    # as a JSON object. So we just pass it forward.
+    # TODO: create translations for error messages
+    %{error: message}
+  end
 end

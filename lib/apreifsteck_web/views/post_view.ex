@@ -11,6 +11,17 @@ defmodule APReifsteckWeb.PostView do
   end
 
   def render("post.json", %{post: post}) do
-    %{id: post.id}
+    %{
+      id: post.id,
+      title: post.title,
+      body: post.body,
+      enable_comments: post.enable_comments,
+      root_id: post.root_id,
+      edits:
+        if(Ecto.assoc_loaded?(post.children),
+          do: render_many(post.children, PostView, "post.json"),
+          else: nil
+        )
+    }
   end
 end

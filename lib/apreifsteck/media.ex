@@ -102,12 +102,28 @@ defmodule APReifsteck.Media do
   end
 
   ############ POST FUNCTIONALITY ############
-  def list_posts(user) do
-    from(p in Post, where: p.user_id == ^user.id)
+  # I don't want the edits to show up on the root level, but I do want them listed as children
+
+  def list_posts() do
+    from(p in Post,
+      where: is_nil(p.root_id),
+      left_join: edits in assoc(p, :children),
+      # ascending by default
+      order_by: edits.id,
+      preload: [children: {edits, []}]
+    )
     |> Repo.all()
   end
 
-  # TODO: sanatize the HTML in here before inserting
+  # REFACTOR
+  def list_posts(user) do
+    from(p in Post,
+      where: p.user_id == ^user.id and is_nil(p.root_id),
+      preload: [children: [:children]]
+    )
+    |> Repo.all()
+  end
+
   def create_post(params, user) do
     %Post{}
     |> Post.changeset(params)
@@ -115,6 +131,9 @@ defmodule APReifsteck.Media do
     |> Repo.insert()
   end
 
+  # TODO: might want to put this authentication into another function that
+  # I somehow pipe the other functions through? I don't want to get hung up on a ton
+  # of refactoring though.
   def get_post(id, user) do
     post =
       from(p in Post,
@@ -131,7 +150,11 @@ defmodule APReifsteck.Media do
     end
   end
 
-  def get_post_history(id, user) do
+  def get_post(id) do
+    case post = Repo.get(Post, id) do
+      nil -> {:error, :not_found}
+      _ -> {:ok, post}
+    end
   end
 
   def delete_post(id, user) do
@@ -170,16 +193,20 @@ defmodule APReifsteck.Media do
     )
   end
 
-  def get_latest_edit(id) when is_integer(id) do
+  def get_latest_edit(id) do
     Repo.get!(Post, id)
     |> get_latest_edit()
   end
 
-  def update_post(id, user, attrs) do
+  def update_post(id, user, attrs) when is_binary(id) do
+    update_post(String.to_integer(id), user, attrs)
+  end
+
+  def update_post(id, user, attrs) when is_integer(id) do
     latest_post_id = get_latest_edit(id).id
 
-    with %Post{} = post <- get_post(id, user),
-         {:ok, %Post{}} = result when id == latest_post_id <-
+    with %Post{} = post when id == latest_post_id <- get_post(id, user),
+         result = {:ok, %Post{}} <-
            post
            |> Repo.preload([:user, :root])
            |> Post.create_edit(attrs)
@@ -187,9 +214,9 @@ defmodule APReifsteck.Media do
       result
     else
       {:error, %Ecto.Changeset{} = changest} ->
-        {:error, changest.errors}
+        {:error, changest}
 
-      {:error, "must ask for post ID of a post from the given user"} = error ->
+      {:error, _} = error ->
         error
 
       _ ->

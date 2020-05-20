@@ -3,12 +3,10 @@ defmodule APReifsteckWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-    # TODO create this.
     plug APReifsteckWeb.APIAuthPlug, otp_app: :apreifsteck
   end
 
   pipeline :api_protected do
-    # TODO create this.
     plug Pow.Plug.RequireAuthenticated, error_handler: APReifsteckWeb.APIAuthErrorHandler
   end
 
@@ -34,10 +32,19 @@ defmodule APReifsteckWeb.Router do
       post "/session/renew", SessionController, :renew
     end
 
+    # TODO: make read actions for posts unauthenticated but CUD need to be authenticated
+    scope "/posts" do
+      pipe_through :api
+      resources "/", PostController, only: [:index, :show]
+      get "/user/:id", PostController, :index_by
+      pipe_through :api_protected
+      resources "/", PostController, except: [:index, :show, :edit, :new]
+    end
+
     pipe_through [:api, :api_protected]
 
     resources "/users", UserController, only: [:index, :show, :update, :create, :delete]
-    resources "/posts", PostController, except: [:new, :edit]
+
     # TODO: add other image routes
     delete "/images", ImageController, :delete
   end

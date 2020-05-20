@@ -14,8 +14,10 @@ defmodule APReifsteckWeb.PostController do
     apply(__MODULE__, action_name(conn), args)
   end
 
-  def index(conn, _params, user) do
-    posts = Media.list_posts(user)
+  # TODO: find the best way to render edits inside of a post, but not render those edits themselves
+  # at the root level when you return -- keep the data uncluttered by repeat information.
+  def index(conn, _params, _user) do
+    posts = Media.list_posts()
     render(conn, "index.json", posts: posts)
   end
 
@@ -28,23 +30,21 @@ defmodule APReifsteckWeb.PostController do
     end
   end
 
-  def show(conn, %{"id" => id}, user) do
-    post = Media.get_post!(id, user)
-    render(conn, "show.json", post: post)
+  # TODO: find the best way to render edits inside of a post
+  def show(conn, %{"id" => id}, _user) do
+    with {:ok, post} <- Media.get_post(id) do
+      render(conn, "show.json", post: post)
+    end
   end
 
   def update(conn, %{"id" => id, "post" => post_params}, user) do
-    post = Media.get_post!(id, user)
-
-    with {:ok, %Post{} = post} <- Media.update_post(post, post_params) do
+    with {:ok, post = %Post{}} <- Media.update_post(id, user, post_params) do
       render(conn, "show.json", post: post)
     end
   end
 
   def delete(conn, %{"id" => id}, user) do
-    post = Media.get_post!(id)
-
-    with {:ok, %Post{}} <- Media.delete_post(post) do
+    with {:ok, %Post{}} <- Media.delete_post(id, user) do
       send_resp(conn, :no_content, "")
     end
   end
