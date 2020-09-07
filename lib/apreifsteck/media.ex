@@ -173,7 +173,7 @@ defmodule APReifsteck.Media do
     end
   end
 
-  def get_latest_edit(post) when is_struct(post) do
+  def get_latest_edit(%Post{} = post) do
     cond do
       root = Repo.preload(post, [:root]).root ->
         # This is one of the children
