@@ -1,0 +1,33 @@
+FROM elixir as base
+
+# install build dependencies
+# RUN apk add --update git build-base nodejs nodejs-npm yarn python
+
+# prepare build dir
+RUN mkdir /app
+WORKDIR /app
+
+# install hex + rebar
+RUN mix local.hex --force && \
+  mix local.rebar --force
+
+# set build ENV
+ENV MIX_ENV=dev
+
+# install mix dependencies
+COPY mix.exs mix.lock ./
+RUN mix deps.get
+RUN mix deps.compile
+
+# assets
+COPY priv priv
+
+# tests
+COPY test test
+
+# build project
+COPY lib lib
+COPY config config
+RUN mix compile
+
+CMD [ "mix", "phx.server" ]
