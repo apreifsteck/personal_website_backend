@@ -7,9 +7,8 @@ defmodule APReifsteck.Media do
   alias APReifsteck.Repo
 
   alias APReifsteck.Uploaders
-  alias APReifsteck.Media.Image
-  alias APReifsteck.Media.Post
-  alias APReifsteck.Accounts
+  alias APReifsteck.{Media, Media.Image, Media.Post}
+  alias APReifsteck.Accounts.User
 
   @doc """
   Returns the list of images.
@@ -57,10 +56,10 @@ defmodule APReifsteck.Media do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_image(%Accounts.User{} = user, attrs \\ %{}) do
-    %Image{}
+  def create_image(%User{} = user, attrs \\ %{}) do
+    user
+    |> Ecto.build_assoc(:images)
     |> Image.changeset(user, attrs)
-    |> Ecto.Changeset.put_assoc(:user, user)
     |> Repo.insert()
   end
 
@@ -96,7 +95,7 @@ defmodule APReifsteck.Media do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_image(%Accounts.User{} = user, %Image{} = image) do
+  def delete_image(%User{} = user, %Image{} = image) do
     spawn(fn -> Uploaders.Image.delete({image.filename, user}) end)
     Repo.delete(image)
   end
@@ -157,21 +156,7 @@ defmodule APReifsteck.Media do
     end
   end
 
-  def delete_post(id, user) do
-    with %Post{root_id: root_id} = post <- get_post(id, user),
-         {:ok, %Post{}} = result when is_nil(root_id) <- Repo.delete(post) do
-      result
-    else
-      {:error, %Ecto.Changeset{} = changest} ->
-        {:error, changest.errors}
-
-      {:error, "must ask for post ID of a post from the given user"} = error ->
-        error
-
-      _ ->
-        {:error, "you can only delete posts from the root post"}
-    end
-  end
+  def get_post!(id), do: Repo.get!(Post, id)
 
   def get_latest_edit(%Post{} = post) do
     cond do
@@ -198,6 +183,41 @@ defmodule APReifsteck.Media do
     |> get_latest_edit()
   end
 
+  def get_root_post(%Post{} = post) do
+    post = Repo.preload(post, [:root])
+
+    case post.root do
+      # If the post has no root, it is at the top of the tree/list
+      nil ->
+        post
+
+      # otherwise we want to recurse to the previous post in the edit list 
+      prev_post ->
+        get_root_post(prev_post)
+    end
+  end
+
+  def get_root_post(id) do
+    Repo.get(Post, id)
+    |> get_root_post()
+  end
+
+  def delete_post(id, user) do
+    with %Post{root_id: root_id} = post <- get_post(id, user),
+         {:ok, %Post{}} = result when is_nil(root_id) <- Repo.delete(post) do
+      result
+    else
+      {:error, %Ecto.Changeset{} = changest} ->
+        {:error, changest.errors}
+
+      {:error, "must ask for post ID of a post from the given user"} = error ->
+        error
+
+      _ ->
+        {:error, "you can only delete posts from the root post"}
+    end
+  end
+
   def update_post(id, user, attrs) when is_binary(id) do
     update_post(String.to_integer(id), user, attrs)
   end
@@ -222,5 +242,134 @@ defmodule APReifsteck.Media do
       _ ->
         {:error, "may only edit the latest version of the post"}
     end
+  end
+
+  ######### POSTS IN EDIT ##########
+  alias APReifsteck.Media.PostInEdit
+
+  @doc """
+  Returns the list of posts_in_edit.
+
+  ## Examples
+
+      iex> list_posts_in_edit()
+      [%PostInEdit{}, ...]
+
+  """
+  def list_posts_in_edit do
+    Repo.all(PostInEdit)
+  end
+
+  @doc """
+  Gets a single post_in_edit.
+
+  Raises `Ecto.NoResultsError` if the Post in edit does not exist.
+
+  ## Examples
+
+      iex> get_post_in_edit!(123)
+      %PostInEdit{}
+
+      iex> get_post_in_edit!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_post_in_edit!(id), do: Repo.get!(PostInEdit, id)
+
+  @doc """
+  Creates a post_in_edit.
+
+  ## Examples
+
+      iex> create_post_in_edit(%{field: value})
+      {:ok, %PostInEdit{}}
+
+      iex> create_post_in_edit(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_post_in_edit(attrs \\ %{}) do
+    %PostInEdit{}
+    |> PostInEdit.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a post_in_edit.
+
+  ## Examples
+
+      iex> update_post_in_edit(post_in_edit, %{field: new_value})
+      {:ok, %PostInEdit{}}
+
+      iex> update_post_in_edit(post_in_edit, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_post_in_edit(%PostInEdit{} = post_in_edit, attrs) do
+    post_in_edit
+    |> PostInEdit.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a post_in_edit.
+
+  ## Examples
+
+      iex> delete_post_in_edit(post_in_edit)
+      {:ok, %PostInEdit{}}
+
+      iex> delete_post_in_edit(post_in_edit)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_post_in_edit(%PostInEdit{} = post_in_edit) do
+    Repo.delete(post_in_edit)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking post_in_edit changes.
+
+  ## Examples
+
+      iex> change_post_in_edit(post_in_edit)
+      %Ecto.Changeset{source: %PostInEdit{}}
+
+  """
+  def change_post_in_edit(%PostInEdit{} = post_in_edit) do
+    PostInEdit.changeset(post_in_edit, %{})
+  end
+
+  ###### COMMENTS ########
+  alias APReifsteck.Media.Comment
+
+  def get_comment!(id), do: Repo.get!(Comment, id)
+
+  def get_post_comments(post = %Post{}) do
+    Repo.preload(post, :comments).comments
+  end
+
+  def create_comment(%Post{} = post, %{"author_id" => author_id} = attrs \\ %{}) do
+    # We are given a comment with a post id, which may reference an edit. We want to coerce the post id to
+    # be the root post id so we don't have to muck with aggregating comments across post edits.
+    # The assumption is that we want comments to show up dispite the particular post edit the comment was made for.
+    if post.enable_comments do
+      post
+      |> Media.get_root_post()
+      |> Ecto.build_assoc(:comments)
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.put_change(:author_id, author_id)
+      |> Comment.changeset(attrs)
+      |> Repo.insert()
+    else
+      {:error, "This post does not allow comments"}
+    end
+  end
+
+  def update_comment(%Comment{} = comment, attrs \\ %{}) do
+    comment
+    |> Comment.changeset(attrs)
+    |> Repo.update()
   end
 end

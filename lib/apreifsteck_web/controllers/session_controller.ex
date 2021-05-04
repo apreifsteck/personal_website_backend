@@ -6,16 +6,14 @@ defmodule APReifsteckWeb.SessionController do
   alias Plug.Conn
 
   @spec create(Conn.t(), map()) :: Conn.t()
-  def create(conn, %{"user" => user_params}) do
+  def create(conn, user_params) do
     conn
     |> Pow.Plug.authenticate_user(user_params)
     |> case do
       {:ok, conn} ->
         json(conn, %{
-          data: %{
-            access_token: conn.private[:api_access_token],
-            renewal_token: conn.private[:api_renewal_token]
-          }
+          access_token: conn.private[:api_access_token],
+          renewal_token: conn.private[:api_renewal_token]
         })
 
       {:error, conn} ->

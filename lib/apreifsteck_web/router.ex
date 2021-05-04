@@ -32,7 +32,6 @@ defmodule APReifsteckWeb.Router do
       post "/session/renew", SessionController, :renew
     end
 
-    # TODO: make read actions for posts unauthenticated but CUD need to be authenticated
     scope "/posts" do
       pipe_through :api
       resources "/", PostController, only: [:index, :show]
@@ -41,11 +40,19 @@ defmodule APReifsteckWeb.Router do
       resources "/", PostController, except: [:index, :show, :edit, :new]
     end
 
+    scope "/comments" do
+      pipe_through :api
+      resources "/", CommentController, only: [:show, :index]
+
+      pipe_through :api_protected
+      resources "/", CommentController, only: [:create, :update]
+    end
+
     pipe_through [:api, :api_protected]
 
     resources "/users", UserController, only: [:index, :show, :update, :create, :delete]
 
     # TODO: add other image routes
-    delete "/images", ImageController, :delete
+    delete "/images", ImageController, only: [:index, :show, :update, :create, :delete]
   end
 end

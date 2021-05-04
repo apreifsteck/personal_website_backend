@@ -1,8 +1,11 @@
 defmodule APReifsteck.TestHelpers do
+  # alias APReifsteckWeb.Router.Helpers, as: Routes
+  # import Phoenix.ConnTest
   alias APReifsteck.{
     Accounts,
     Accounts.User,
     Media,
+    Media.Post,
     Repo
   }
 
@@ -40,6 +43,20 @@ defmodule APReifsteck.TestHelpers do
       |> Repo.insert!()
 
     Map.replace!(user, :password, nil)
+  end
+
+  def post_fixture(user, attrs \\ %{}) do
+    {:ok, post} =
+      Media.create_post(
+        %{
+          "title" => attrs["title"] || "POST TITLE",
+          "body" => attrs["body"] || "some post body",
+          "enable_comments" => attrs["enable_comments"] || true
+        },
+        user
+      )
+
+    post
   end
 
   def image_fixture(user, attrs \\ %{}) do

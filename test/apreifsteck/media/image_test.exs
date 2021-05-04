@@ -61,7 +61,7 @@ defmodule APReifsteck.ImageTest do
     test "update_image/2 when trying to modify image object returns error changeset", %{
       user: user
     } do
-      image = image_fixture(user)
+      image = image_fixture(user) |> Repo.preload(:user)
       assert {:error, %Ecto.Changeset{}} = Media.update_image(image, @invalid_update_attrs)
       assert image == Media.get_image!(image.id) |> Repo.preload(:user)
     end
@@ -99,7 +99,7 @@ defmodule APReifsteck.ImageTest do
     end
 
     test "list_images/0 returns all images", %{user: user} do
-      image = image_fixture(user)
+      image = image_fixture(user) |> Repo.preload(:user)
       assert Media.list_images() |> Repo.preload(:user) == [image]
     end
   end
@@ -110,7 +110,7 @@ defmodule APReifsteck.ImageTest do
     end
 
     test "get_image!/1 returns the image with given id", %{user: user} do
-      image = image_fixture(user)
+      image = image_fixture(user) |> Repo.preload(:user)
       assert Media.get_image!(image.id) |> Repo.preload(:user) == image
     end
   end

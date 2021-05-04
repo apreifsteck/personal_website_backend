@@ -17,7 +17,12 @@ defmodule APReifsteckWeb.PostControllerTest do
   end
 
   defp batch_create(user, _attrs_list) do
-    APReifsteck.Repo.preload(user, [:posts]).posts
+    alias APReifsteck.Repo
+
+    Repo.all(Post)
+    |> Repo.preload(:user)
+
+    APReifsteck.Repo.preload(user, :posts).posts
   end
 
   def fixture(:posts, user) do
@@ -60,7 +65,8 @@ defmodule APReifsteckWeb.PostControllerTest do
   describe "index" do
     setup %{authed_conn: conn} do
       fixture(:post, random_user())
-      batch_create(conn.assigns.current_user)
+      posts = fixture(:posts, conn.assigns.current_user)
+      {:ok, posts: posts}
     end
 
     test "lists all posts", %{conn: conn, posts: posts} do
@@ -179,10 +185,5 @@ defmodule APReifsteckWeb.PostControllerTest do
   defp create_post(user) do
     post = fixture(:post, user)
     {:ok, post: post}
-  end
-
-  defp batch_create(user) do
-    posts = fixture(:posts, user)
-    {:ok, posts: posts}
   end
 end

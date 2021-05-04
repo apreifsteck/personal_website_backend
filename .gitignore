@@ -30,3 +30,5 @@ apreifsteck-*.tar
 .elixir_ls/
 
 /data/
+
+.DS_Store

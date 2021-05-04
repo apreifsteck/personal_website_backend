@@ -8,18 +8,13 @@ defmodule APReifsteckWeb.ImageController do
   action_fallback APReifsteckWeb.FallbackController
 
   def index(conn, _params) do
-    images = Media.list_images()
-    render(conn, "index.json", images: images)
-  end
-
-  def user_index(conn, %{"user_id" => uid}) do
-    images = Media.list_user_images(uid)
+    images = Media.list_user_images(conn.assigns.current_user.uname)
     # TODO: render something
     render(conn, "index.json", images: images)
   end
 
-  def create(conn, %{"user_id" => user_id} = img_ob) do
-    user = Accounts.get_user!(user_id)
+  def create(conn, img_ob) do
+    user = conn.assigns.current_user
 
     with {:ok, %Image{} = image} <- Media.create_image(user, img_ob) do
       conn
@@ -43,7 +38,7 @@ defmodule APReifsteckWeb.ImageController do
   end
 
   def delete(conn, %{"image_id" => id, "user_id" => user_id}) do
-    user = Accounts.get_user!(user_id)
+    user = conn.assigns.current_user
     image = Media.get_image!(id)
 
     with {:ok, %Image{}} <- Media.delete_image(user, image) do

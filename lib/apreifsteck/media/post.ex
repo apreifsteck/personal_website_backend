@@ -6,8 +6,10 @@ defmodule APReifsteck.Media.Post do
   schema "posts" do
     field :title, :string
     field :body, :string
-    field :enable_comments, :boolean
+    field :enable_comments, :boolean, default: true
     field :root_id, :integer
+    many_to_many :images, APReifsteck.Media.Image, join_through: "posts_images"
+    has_many :comments, APReifsteck.Media.Comment
     belongs_to :user, APReifsteck.Accounts.User
 
     belongs_to :root, Post,

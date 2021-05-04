@@ -18,10 +18,6 @@ defmodule APReifsteck.PostTest do
   }
 
   describe "create_post" do
-    @malicious_attrs %{
-      "title" => "I'm a sneaky bastard",
-      "body" => "<h1>Hello <script>World!</script></h1>"
-    }
     setup do
       {:ok, user: user_fixture()}
     end
@@ -34,9 +30,8 @@ defmodule APReifsteck.PostTest do
       assert {:error, %Ecto.Changeset{}} = Media.create_post(@invalid_attrs, user)
     end
 
-    test "creating a post with invalid html will sanatize it", %{user: user} do
-      assert {:ok, %Post{} = post} = Media.create_post(@malicious_attrs, user)
-      assert post.body == "<h1>Hello World!</h1>"
+    test "create post with a nil user returns an error" do
+      assert false
     end
   end
 
@@ -121,6 +116,11 @@ defmodule APReifsteck.PostTest do
 
       {:ok, new_post} = Media.create_post(@valid_attrs, user)
       assert Media.get_latest_edit(new_post).id == new_post.id
+    end
+
+    test "get_root_post gets the root post", %{user: user, posts: posts, root_post: root_post} do
+      [p1, p2, p3] = posts
+      assert Media.get_root_post(p3).id == root_post.id
     end
   end
 

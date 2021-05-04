@@ -6,7 +6,7 @@ defmodule APReifsteck.AccountsTest do
   alias APReifsteck.Accounts.User
 
   @update_attrs %{
-    email: "some updated email",
+    email: "updated@example.com",
     name: "some updated name",
     # I cheated and looked
     current_password: "secretpassword",
@@ -31,10 +31,10 @@ defmodule APReifsteck.AccountsTest do
   test "update_user/2 with valid data updates the user" do
     old_user = user_fixture()
     assert {:ok, %User{} = user} = Accounts.update_user(old_user, @update_attrs)
-    assert user.email == "some updated email"
-    assert user.name == "some updated name"
+    assert user.email == @update_attrs.email
+    assert user.name == @update_attrs.name
     assert user.password_hash != old_user.password_hash
-    assert user.uname == "some updated uname"
+    assert user.uname == @update_attrs.uname
   end
 
   test "update_user/2 with invalid data returns error changeset" do

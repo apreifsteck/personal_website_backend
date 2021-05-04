@@ -6,13 +6,15 @@ defmodule APReifsteckWeb.CommentController do
 
   action_fallback APReifsteckWeb.FallbackController
 
-  def index(conn, _params) do
-    comments = Media.list_comments()
+  def index(conn, %{"post_id" => post_id} = params) do
+    {:ok, post} = Media.get_post(post_id)
+    comments = Media.get_post_comments(post)
     render(conn, "index.json", comments: comments)
   end
 
-  def create(conn, %{"comment" => comment_params}) do
-    with {:ok, %Comment{} = comment} <- Media.create_comment(comment_params) do
+  def create(conn, %{"post_id" => post_id, "comment" => comment_params}) do
+    with {:ok, post} <- Media.get_post(post_id),
+         {:ok, %Comment{} = comment} <- Media.create_comment(post, comment_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.comment_path(conn, :show, comment))
@@ -33,11 +35,11 @@ defmodule APReifsteckWeb.CommentController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    comment = Media.get_comment!(id)
+  # def delete(conn, %{"id" => id}) do
+  #   comment = Media.get_comment!(id)
 
-    with {:ok, %Comment{}} <- Media.delete_comment(comment) do
-      send_resp(conn, :no_content, "")
-    end
-  end
+  #   with {:ok, %Comment{}} <- Media.delete_comment(comment) do
+  #     send_resp(conn, :no_content, "")
+  #   end
+  # end
 end

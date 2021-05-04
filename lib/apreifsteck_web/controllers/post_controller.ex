@@ -1,10 +1,17 @@
 defmodule APReifsteckWeb.PostController do
   use APReifsteckWeb, :controller
+  alias APReifsteckWeb.ProtectedResource, as: PR
 
   alias APReifsteck.Media
   alias APReifsteck.Media.Post
 
   action_fallback APReifsteckWeb.FallbackController
+
+  defimpl ProtectedResource, for: Post do
+    def get(user, id), do: PR.get_protected_resource(Media, :get_post, user, id)
+
+    def get!(user, id), do: PR.get_protected_resource(Media, :get_post!, user, id)
+  end
 
   # By default, users can only CRUD their stuff. TODO: make an admin route to RUD on posts not thier own.
 

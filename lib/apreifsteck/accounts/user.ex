@@ -11,8 +11,9 @@ defmodule APReifsteck.Accounts.User do
     field :name, :string
     field :uname, :string
     pow_user_fields()
-    has_many :images, APReifsteck.Media.Image, foreign_key: :id
+    has_many :images, APReifsteck.Media.Image, foreign_key: :user_id
     has_many :posts, APReifsteck.Media.Post, foreign_key: :user_id
+    # has_many :comments, APReifsteck.Media.Comment, for
 
     timestamps()
   end
@@ -26,6 +27,7 @@ defmodule APReifsteck.Accounts.User do
     |> cast(attrs, [:name, :uname, :email])
     |> validate_required([:name, :uname])
     |> validate_length(:uname, min: 1, max: 20)
+    |> validate_change(:email, &validate_email(&1, &2))
     |> unique_constraint(:uname)
   end
 
@@ -46,8 +48,11 @@ defmodule APReifsteck.Accounts.User do
     end
   end
 
-  # TODO: add email validation
-  # defp validate_email(changeset) do
-  # case(Pow.Ecto.Schema.Changeset.validate_email(changeset["email"]))
-  # end
+  defp validate_email(:email, email) do
+    # The docs said you're never supposed to call this directly, but it also only get's called if the user_id_field is set to email. So. Sorry buds.
+    case Pow.Ecto.Schema.Changeset.validate_email(email) do
+      :ok -> []
+      {:error, err} -> [email: err]
+    end
+  end
 end
