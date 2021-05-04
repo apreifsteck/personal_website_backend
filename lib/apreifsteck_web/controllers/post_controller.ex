@@ -8,9 +8,9 @@ defmodule APReifsteckWeb.PostController do
   action_fallback APReifsteckWeb.FallbackController
 
   defimpl ProtectedResource, for: Post do
-    def get(user, id), do: PR.get_protected_resource(Media, :get_post, user, id)
+    def get(_resource, user, id), do: PR.get_protected_resource(Media, :get_post, user, id)
 
-    def get!(user, id), do: PR.get_protected_resource(Media, :get_post!, user, id)
+    def get!(_resource, user, id), do: PR.get_protected_resource(Media, :get_post!, user, id)
   end
 
   # By default, users can only CRUD their stuff. TODO: make an admin route to RUD on posts not thier own.
@@ -45,14 +45,16 @@ defmodule APReifsteckWeb.PostController do
   end
 
   def update(conn, %{"id" => id, "post" => post_params}, user) do
-    with {:ok, post = %Post{}} <- Media.update_post(id, user, post_params) do
+    with {:ok, post = %Post{}} <- ProtectedResource.get(struct(Post), user, id),
+      {:ok, post = %Post{}} <- Media.update_post(post, post_params) do
       render(conn, "show.json", post: post)
     end
   end
 
   def delete(conn, %{"id" => id}, user) do
-    with {:ok, %Post{}} <- Media.delete_post(id, user) do
-      send_resp(conn, :no_content, "")
+    with {:ok, post = %Post{}} <- ProtectedResource.get(struct(Post), user, id),
+      {:ok, %Post{}} <- Media.delete_post(post) do
+        send_resp(conn, :no_content, "")
     end
   end
 end

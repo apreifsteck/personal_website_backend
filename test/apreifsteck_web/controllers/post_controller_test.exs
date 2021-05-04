@@ -82,9 +82,9 @@ defmodule APReifsteckWeb.PostControllerTest do
       authed_conn: authed_conn
     } do
       {:ok, updated_post} =
-        Media.update_post(hd(posts).id, authed_conn.assigns.current_user, @update_attrs)
+        Media.update_post(hd(posts),  @update_attrs)
 
-      Media.update_post(updated_post.id, authed_conn.assigns.current_user, @update_attrs)
+      Media.update_post(updated_post, @update_attrs)
 
       conn = get(conn, Routes.post_path(conn, :index))
       data = json_response(conn, 200)["data"]
@@ -148,6 +148,11 @@ defmodule APReifsteckWeb.PostControllerTest do
       create_post(conn.assigns.current_user)
     end
 
+    setup context do
+      mconn = Plug.Conn.assign(conn, :current_user, random_user())
+      {:ok, malicious_conn: mconn}
+    end
+
     test "renders post when data is valid", %{authed_conn: conn, post: %Post{id: id} = post} do
       conn = put(conn, Routes.post_path(conn, :update, post), post: @update_attrs)
       assert %{"id" => update_id} = json_response(conn, 200)["data"]
@@ -164,11 +169,20 @@ defmodule APReifsteckWeb.PostControllerTest do
       conn = put(conn, Routes.post_path(conn, :update, post), post: @invalid_attrs)
       assert json_response(conn, 422)["errors"] != %{}
     end
+
+    test "renders errors when user tries to update a post that is not theirs", %{post: post, malicious_conn: mconn} do
+      mconn = put(mconn, Routes.post_path(mconn, :update, post), post: @update_attrs)
+      assert json_response(mconn, 401)
+    end
   end
 
   describe "delete post" do
     setup %{authed_conn: conn} do
       create_post(conn.assigns.current_user)
+    end
+    setup _ do
+      mconn = Plug.Conn.assign(conn, :current_user, random_user())
+      {:ok, malicious_conn: mconn}
     end
 
     test "deletes chosen post", %{authed_conn: conn, post: post} do
@@ -179,6 +193,11 @@ defmodule APReifsteckWeb.PostControllerTest do
                conn |> get(Routes.post_path(conn, :show, post)),
                404
              )
+    end
+
+    test "malicious actors cannot delete posts not their own", %{malicious_conn: mconn, post: post} do
+      mconn = delete(mconn, Routes.post_path(mconn, :delete, post))
+      assert response(mconn, 401)
     end
   end
 

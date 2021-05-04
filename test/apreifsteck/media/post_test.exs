@@ -31,7 +31,7 @@ defmodule APReifsteck.PostTest do
     end
 
     test "create post with a nil user returns an error" do
-      assert false
+      assert {:error, _} = Media.create_post(@valid_attrs, nil)
     end
   end
 
@@ -45,28 +45,17 @@ defmodule APReifsteck.PostTest do
     end
 
     test "get a post that the user has created returns the post", %{user: user, post: post} do
-      assert Media.get_post(post.id, user).id == post.id
+      {:ok, test_post} = Media.get_post(post.id)
+      assert test_post.id == post.id
     end
 
-    test "get_post returns only one post when there are multiple", %{user: user, post: post} do
+    test "returns only one post when there are multiple", %{user: user, post: post} do
       attrs =
         @valid_attrs
         |> Map.replace!("title", "this is a different post")
 
       Media.create_post(attrs, user)
-      assert post = Media.get_post(post.id, user)
-    end
-
-    test "trying to get a post not made by that user returns an error", %{user: user} do
-      other_user = random_user()
-
-      attrs =
-        @valid_attrs
-        |> Map.replace!("title", "this is a different post")
-
-      {:ok, other_post} = Media.create_post(attrs, other_user)
-
-      assert {:error, _} = Media.get_post(other_post.id, user)
+      assert post = Media.get_post(post.id)
     end
   end
 
@@ -74,14 +63,13 @@ defmodule APReifsteck.PostTest do
   # guarantee that the first post in the list is the root post
   # otherwise, posts are in no particular order
 
-  def batch_update(id, user, attrs_list) when attrs_list != [] do
+  def batch_update(post, attrs_list) when attrs_list != [] do
     [head | tail] = attrs_list
-    {:ok, post} = Media.update_post(id, user, head)
-    batch_update(post.id, user, tail)
+    {:ok, post} = Media.update_post(post, head)
+    batch_update(post, tail)
   end
 
-  def batch_update(id, _user, _attrs_list) do
-    post = Repo.get!(Post, id)
+  def batch_update(post, _attrs_list) do
     query = from c in Post, order_by: c.id
 
     # Get all the edits of a post in ascending order. Does not include root
@@ -100,7 +88,7 @@ defmodule APReifsteck.PostTest do
         end
 
       {:ok, root_post} = Media.create_post(@valid_attrs, user)
-      posts = batch_update(root_post.id, user, attrs)
+      posts = batch_update(root_post, attrs)
 
       # I tested it and these get returned in order
       {:ok, user: user, posts: posts, root_post: root_post}
@@ -135,7 +123,7 @@ defmodule APReifsteck.PostTest do
         "enable_comments" => false
       }
 
-      {:ok, edit} = Media.update_post(root_post.id, user, update_attrs)
+      {:ok, edit} = Media.update_post(root_post, update_attrs)
       {:ok, user: user, post: root_post, edit: edit}
     end
 
@@ -155,8 +143,7 @@ defmodule APReifsteck.PostTest do
 
       # Post edits have one root node, and the edits are leaves.
       # You can order them either by their insert date or id, both are monotomically increasing.
-
-      {:ok, another_edit} = Media.update_post(edit.id, user, update_attrs)
+      {:ok, another_edit} = Media.update_post(edit, update_attrs)
       assert another_edit.body == edit.body
       assert another_edit.root_id == post.id
       assert another_edit.title == update_attrs["title"]
@@ -186,7 +173,7 @@ defmodule APReifsteck.PostTest do
       latest_edit = Media.get_latest_edit(post)
 
       assert {:error, "may only edit the latest version of the post"} =
-               Media.update_post(post.id, user, update_attrs)
+               Media.update_post(post, update_attrs)
 
       assert latest_edit.id == Media.get_latest_edit(post).id
     end
@@ -195,19 +182,8 @@ defmodule APReifsteck.PostTest do
       user: user,
       edit: edit
     } do
-      assert {:error, errors} = Media.update_post(edit.id, user, @invalid_attrs)
+      assert {:error, errors} = Media.update_post(edit, @invalid_attrs)
       assert errors != []
-    end
-
-    test "cannot edit another user's post", %{post: post} do
-      user2 = random_user()
-
-      update_attrs = %{
-        "title" => "an even more different title"
-      }
-
-      assert {:error, "must ask for post ID of a post from the given user"} =
-               Media.update_post(post.id, user2, update_attrs)
     end
   end
 
@@ -223,7 +199,7 @@ defmodule APReifsteck.PostTest do
         end
 
       {:ok, root_post} = Media.create_post(@valid_attrs, user)
-      posts = batch_update(root_post.id, user, attrs)
+      posts = batch_update(root_post, attrs)
 
       # I tested it and these get returned in order
       {:ok, user: user, posts: posts, root_post: root_post}
@@ -234,22 +210,7 @@ defmodule APReifsteck.PostTest do
       [_head | [middle | _last]] = posts
 
       assert {:error, "you can only delete posts from the root post"} =
-               Media.delete_post(middle.id, user)
-    end
-
-    test "users can only delete their own posts", %{user: user} do
-      other_user = random_user()
-
-      another_post = %{
-        "title" => "I decided to change the title",
-        "body" => "here's a different body too",
-        "enable_comments" => false
-      }
-
-      {:ok, another_post} = Media.create_post(another_post, other_user)
-
-      assert {:error, "must ask for post ID of a post from the given user"} =
-               Media.delete_post(another_post.id, user)
+               Media.delete_post(middle)
     end
 
     test "deleting root post does a cascading delete on edits", %{
@@ -258,7 +219,7 @@ defmodule APReifsteck.PostTest do
       root_post: root_post
     } do
       [head | [branch | leaf]] = posts
-      assert {:ok, root_post} = Media.delete_post(root_post.id, user)
+      assert {:ok, root_post} = Media.delete_post(root_post)
       assert Repo.get(Post, head.id) == nil
       assert Repo.get(Post, branch.id) == nil
       assert Repo.get(Post, hd(leaf).id) == nil

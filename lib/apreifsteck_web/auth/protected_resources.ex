@@ -6,7 +6,7 @@ defmodule APReifsteckWeb.ProtectedResource do
       if Map.get(resource, opts[:uid_key] || :user_id) == user.id do
         {:ok, resource}
       else
-        {:error, "This user does not have access to this resource"}
+        {:error, :unauthorized}
       end
     end
   end
@@ -20,7 +20,7 @@ defmodule APReifsteckWeb.ProtectedResource do
 end
 
 defprotocol ProtectedResource do
-  def get(user, id)
+  def get(resource, user, id)
 
-  def get!(user, id)
+  def get!(resource, user, id)
 end

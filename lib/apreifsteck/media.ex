@@ -96,7 +96,7 @@ defmodule APReifsteck.Media do
 
   """
   def delete_image(%User{} = user, %Image{} = image) do
-    spawn(fn -> Uploaders.Image.delete({image.filename, user}) end)
+    spawn(fn -> Uploaders.Image.delete({image.filename}) end)
     Repo.delete(image)
   end
 
@@ -123,31 +123,34 @@ defmodule APReifsteck.Media do
     |> Repo.all()
   end
 
+
+  def create_post(_params, nil), do: {:error, "must supply a user when creating a post"}
+
   def create_post(params, user) do
-    %Post{}
+    user
+    |> Ecto.build_assoc(:posts)
     |> Post.changeset(params)
-    |> Ecto.Changeset.put_assoc(:user, user)
     |> Repo.insert()
   end
 
   # TODO: might want to put this authentication into another function that
   # I somehow pipe the other functions through? I don't want to get hung up on a ton
   # of refactoring though.
-  def get_post(id, user) do
-    post =
-      from(p in Post,
-        where: p.id == ^id and p.user_id == ^user.id
-      )
-      |> Repo.one()
+  # def get_post(id, user) do
+  #   post =
+  #     from(p in Post,
+  #       where: p.id == ^id and p.user_id == ^user.id
+  #     )
+  #     |> Repo.one()
 
-    case post do
-      nil ->
-        {:error, "must ask for post ID of a post from the given user"}
+  #   case post do
+  #     nil ->
+  #       {:error, "must ask for post ID of a post from the given user"}
 
-      _ ->
-        post
-    end
-  end
+  #     _ ->
+  #       post
+  #   end
+  # end
 
   def get_post(id) do
     case post = Repo.get(Post, id) do
@@ -178,7 +181,7 @@ defmodule APReifsteck.Media do
     )
   end
 
-  def get_latest_edit(id) do
+  def get_latest_edit(id) when is_integer(id) do
     Repo.get!(Post, id)
     |> get_latest_edit()
   end
@@ -202,45 +205,39 @@ defmodule APReifsteck.Media do
     |> get_root_post()
   end
 
-  def delete_post(id, user) do
-    with %Post{root_id: root_id} = post <- get_post(id, user),
-         {:ok, %Post{}} = result when is_nil(root_id) <- Repo.delete(post) do
+  def delete_post(%Post{} = post) do
+    with {:ok, %Post{}} = result when is_nil(post.root_id) <- Repo.delete(post) do
       result
     else
       {:error, %Ecto.Changeset{} = changest} ->
         {:error, changest.errors}
-
-      {:error, "must ask for post ID of a post from the given user"} = error ->
-        error
 
       _ ->
         {:error, "you can only delete posts from the root post"}
     end
   end
 
-  def update_post(id, user, attrs) when is_binary(id) do
-    update_post(String.to_integer(id), user, attrs)
-  end
+  def update_post(%Post{} = post, attrs) do
+    latest_post_id = get_latest_edit(post).id
 
-  def update_post(id, user, attrs) when is_integer(id) do
-    latest_post_id = get_latest_edit(id).id
+    if post.id == latest_post_id do
+      post
+        |> Repo.preload([:user, :root])
+        |> Post.create_edit(attrs)
+        |> Repo.insert()
+        |> case do
 
-    with %Post{} = post when id == latest_post_id <- get_post(id, user),
-         result = {:ok, %Post{}} <-
-           post
-           |> Repo.preload([:user, :root])
-           |> Post.create_edit(attrs)
-           |> Repo.insert() do
-      result
+          {:ok, _} = updated_post -> 
+            updated_post
+
+          {:error, %Ecto.Changeset{} = changest} ->
+            {:error, changest}
+    
+          {:error, _} = error ->
+            error
+        end
     else
-      {:error, %Ecto.Changeset{} = changest} ->
-        {:error, changest}
-
-      {:error, _} = error ->
-        error
-
-      _ ->
-        {:error, "may only edit the latest version of the post"}
+      {:error, "may only edit the latest version of the post"}
     end
   end
 
