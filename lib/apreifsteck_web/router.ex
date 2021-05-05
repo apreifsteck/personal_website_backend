@@ -48,11 +48,12 @@ defmodule APReifsteckWeb.Router do
       resources "/", CommentController, only: [:create, :update]
     end
 
-    pipe_through [:api, :api_protected]
+    scope "/images" do
+      pipe_through :api
+      resources "/", ImageController, only: [:show, :index]
 
-    resources "/users", UserController, only: [:index, :show, :update, :create, :delete]
-
-    # TODO: add other image routes
-    delete "/images", ImageController, only: [:index, :show, :update, :create, :delete]
+      pipe_through :api_protected
+      resources "/", ImageController, only: [:update, :create, :delete]
+    end
   end
 end

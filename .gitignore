@@ -31,4 +31,6 @@ apreifsteck-*.tar
 
 /data/
 
+/uploads/
+
 .DS_Store

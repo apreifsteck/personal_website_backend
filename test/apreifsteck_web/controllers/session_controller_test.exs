@@ -29,6 +29,7 @@ defmodule APReifsteckWeb.SessionControllerTest do
 
     test "with valid params", %{conn: conn} do
       conn = post(conn, Routes.session_path(conn, :create, @valid_params))
+
       assert json = json_response(conn, 200)
       assert json["data"]["access_token"]
       assert json["data"]["renewal_token"]
@@ -44,6 +45,13 @@ defmodule APReifsteckWeb.SessionControllerTest do
   end
 
   describe "renew/2" do
+    setup %{conn: conn} do
+      authed_conn = post(conn, Routes.session_path(conn, :create, @valid_params))
+      :timer.sleep(100)
+
+      {:ok, renewal_token: authed_conn.private[:api_renewal_token]}
+    end
+
     setup %{conn: conn} do
       authed_conn = post(conn, Routes.session_path(conn, :create, @valid_params))
       :timer.sleep(100)

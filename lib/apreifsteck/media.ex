@@ -43,6 +43,12 @@ defmodule APReifsteck.Media do
 
   """
   def get_image!(id), do: Repo.get!(Image, id)
+  def get_image(id) do
+    case image = Repo.get(Image, id) do
+      nil -> {:error, :not_found}
+      _ -> {:ok, image}
+    end
+  end
 
   @doc """
   Creates a image.
@@ -96,7 +102,7 @@ defmodule APReifsteck.Media do
 
   """
   def delete_image(%User{} = user, %Image{} = image) do
-    spawn(fn -> Uploaders.Image.delete({image.filename}) end)
+    spawn(fn -> Uploaders.Image.delete({image.filename, user}) end)
     Repo.delete(image)
   end
 

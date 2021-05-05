@@ -1,6 +1,6 @@
 defmodule APReifsteckWeb.PostController do
   use APReifsteckWeb, :controller
-  alias APReifsteckWeb.ProtectedResource, as: PR
+  use APReifsteckWeb.ProtectedResource
 
   alias APReifsteck.Media
   alias APReifsteck.Media.Post
@@ -14,12 +14,6 @@ defmodule APReifsteckWeb.PostController do
   end
 
   # By default, users can only CRUD their stuff. TODO: make an admin route to RUD on posts not thier own.
-
-  # posts is protected, so get the current user as a third argument to each action
-  def action(conn, _) do
-    args = [conn, conn.params, conn.assigns.current_user]
-    apply(__MODULE__, action_name(conn), args)
-  end
 
   # TODO: find the best way to render edits inside of a post, but not render those edits themselves
   # at the root level when you return -- keep the data uncluttered by repeat information.

@@ -1,11 +1,10 @@
 defmodule APReifsteck.Uploaders.Image do
-  use Arc.Definition
+  use Waffle.Definition
 
   # Include ecto support (requires package arc_ecto installed):
 
   @versions [:original]
 
-  def __storage, do: Arc.Storage.Local
   # To add a thumbnail version:
   # @versions [:original, :thumb]
 

@@ -12,6 +12,12 @@ defmodule APReifsteck.Media.Image do
   end
 
   @doc false
+  def changeset(image, _, attrs = %{"image" => nil}) do
+    image
+    |> change()
+    |> add_error(:missing_image, "Must have an image object to create an image")
+  end
+
   def changeset(image, user, attrs) do
     attrs =
       attrs
@@ -33,7 +39,7 @@ defmodule APReifsteck.Media.Image do
 
     case attrs do
       %{image: _} ->
-        %Ecto.Changeset{}
+        Ecto.Changeset.change(image)
         |> add_error(:image, "Cannot modify image object after upload",
           fix: "delete image and upload the one you want"
         )
@@ -46,7 +52,7 @@ defmodule APReifsteck.Media.Image do
 
   defp restructure_attrs(%{} = attrs) do
     Map.take(attrs, ["image", "description", "title"])
-    |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
+    |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
     |> Enum.into(%{})
   end
 

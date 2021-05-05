@@ -1,4 +1,16 @@
 defmodule APReifsteckWeb.ProtectedResource do
+
+  # Injected into protected resources, so get the current user as a third argument to each action
+  defmacro __using__(opts\\[]) do
+    quote do
+      alias APReifsteckWeb.ProtectedResource, as: PR
+      def action(conn, _) do
+        args = [conn, conn.params, conn.assigns.current_user]
+        apply(__MODULE__, action_name(conn), args)
+      end
+    end
+  end
+
   alias APReifsteck.Accounts.User
 
   def get_protected_resource(module, getter_func, %User{} = user, id, opts \\ []) do

@@ -195,9 +195,11 @@ defmodule APReifsteckWeb.PostControllerTest do
              )
     end
 
-    test "malicious actors cannot delete posts not their own", %{malicious_conn: mconn, post: post} do
+    test "malicious actors cannot delete posts not their own", %{malicious_conn: mconn, post: post, authed_conn: conn} do
       mconn = delete(mconn, Routes.post_path(mconn, :delete, post))
       assert response(mconn, 401)
+
+      assert response(get(conn, Routes.post_path(conn, :show, post)), 200) 
     end
   end
 

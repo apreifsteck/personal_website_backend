@@ -42,7 +42,7 @@ defmodule APReifsteck.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:pbkdf2_elixir, "~> 1.0"},
-      {:arc, "~> 0.11.0"},
+      {:waffle, "~> 1.1"},
       {:cors_plug, "~> 2.0"},
       {:pow, "~> 1.0.20"},
       {:html_sanitize_ex, "~> 1.3.0-rc3"}
