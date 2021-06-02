@@ -16,7 +16,7 @@ config :apreifsteck, APReifsteckWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "oqqZfoQ2L7Prw1Vy6StLjpEGDdNlWzaXRzwuR7YmjRkC4NJo7jOYJucJr2tWJc69",
   render_errors: [view: APReifsteckWeb.ErrorView, accepts: ~w(json)],
-  pubsub: [name: APReifsteck.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: APReifsteck.PubSub,
   live_view: [signing_salt: "tuhgCOdu"]
 
 # Configures Elixir's Logger

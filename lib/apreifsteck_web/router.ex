@@ -12,6 +12,7 @@ defmodule APReifsteckWeb.Router do
 
   # Host the static images you can upload
   pipeline :static do
+    plug :accepts, ["json"]
     plug Plug.Static,
       at: "/media",
       from: "uploads"
@@ -30,6 +31,11 @@ defmodule APReifsteckWeb.Router do
       resources "/registration", RegistrationController, singleton: true, only: [:create]
       resources "/session", SessionController, singleton: true, only: [:create, :delete]
       post "/session/renew", SessionController, :renew
+    end
+
+    scope "/users" do
+      pipe_through :api
+      get "/:uname", UserController, :show
     end
 
     scope "/posts" do

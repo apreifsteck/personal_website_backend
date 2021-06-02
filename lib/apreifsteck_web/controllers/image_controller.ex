@@ -13,11 +13,11 @@ defmodule APReifsteckWeb.ImageController do
     def get!(_resource, user, id), do: PR.get_protected_resource(Media, :get_image!, user, id)
   end
 
-  # def index(conn, _params) do
-  #   images = Media.list_user_images(conn.assigns.current_user.uname)
-  #   # TODO: render something
-  #   render(conn, "index.json", images: images)
-  # end
+  def index(conn, %{"user_id" => id} = params, _user) do
+    images = Media.list_user_images(id)
+    # TODO: render something
+    render(conn, "index.json", images: images)
+  end
 
   def create(conn, img_ob, user) do
     with {:ok, %Image{} = image} <- Media.create_image(user, img_ob) do
@@ -41,7 +41,7 @@ defmodule APReifsteckWeb.ImageController do
   end
 
   def delete(conn, %{"id" => id }, user) do
-    with {:ok, %Image{} = image} <- ProtectedResource.get(struct(Image), user, id),  
+    with {:ok, %Image{} = image} <- ProtectedResource.get(struct(Image), user, id),
       {:ok, %Image{} } <- Media.delete_image(user, image) do
         send_resp(conn, :no_content, "")
     end

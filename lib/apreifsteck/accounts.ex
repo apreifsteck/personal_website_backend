@@ -41,7 +41,13 @@ defmodule APReifsteck.Accounts do
 
   """
   def get_user_by(params) do
-    User |> Repo.get_by(params)
+    User 
+    |> Repo.get_by(params)
+    |> case do
+      nil -> {:error, :not_found}
+      res -> {:ok, res}
+    end
+
   end
 
   def get_user_by!(params) do

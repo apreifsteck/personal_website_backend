@@ -17,6 +17,12 @@ defmodule APReifsteckWeb.UserController do
     render(conn, "show.json", user: user)
   end
 
+  def show(conn, %{"uname" => uname}) do
+    with {:ok, user} <- Accounts.get_user_by(uname: uname) do
+      render(conn, "show.json", user: user)
+    end
+  end
+
   def update(conn, %{"id" => id, "user" => user_params}) do
     user = Accounts.get_user!(id)
 

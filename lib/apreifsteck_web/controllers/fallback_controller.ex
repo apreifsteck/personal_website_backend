@@ -13,7 +13,16 @@ defmodule APReifsteckWeb.FallbackController do
     |> render("error.json", changeset: changeset)
   end
 
+  # This is for entities that are not found
   def call(conn, {:error, :not_found}) do
+    conn
+    |> put_status(:not_found)
+    |> put_view(APReifsteckWeb.ErrorView)
+    |> render(:"404")
+  end
+
+  # This is for routes that are not found
+  def call(conn, :not_found) do
     conn
     |> put_status(:not_found)
     |> put_view(APReifsteckWeb.ErrorView)
