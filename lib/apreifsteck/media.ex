@@ -43,6 +43,7 @@ defmodule APReifsteck.Media do
 
   """
   def get_image!(id), do: Repo.get!(Image, id)
+
   def get_image(id) do
     case image = Repo.get(Image, id) do
       nil -> {:error, :not_found}
@@ -128,7 +129,6 @@ defmodule APReifsteck.Media do
     )
     |> Repo.all()
   end
-
 
   def create_post(_params, nil), do: {:error, "must supply a user when creating a post"}
 
@@ -228,20 +228,19 @@ defmodule APReifsteck.Media do
 
     if post.id == latest_post_id do
       post
-        |> Repo.preload([:user, :root])
-        |> Post.create_edit(attrs)
-        |> Repo.insert()
-        |> case do
+      |> Repo.preload([:user, :root])
+      |> Post.create_edit(attrs)
+      |> Repo.insert()
+      |> case do
+        {:ok, _} = updated_post ->
+          updated_post
 
-          {:ok, _} = updated_post -> 
-            updated_post
+        {:error, %Ecto.Changeset{} = changest} ->
+          {:error, changest}
 
-          {:error, %Ecto.Changeset{} = changest} ->
-            {:error, changest}
-    
-          {:error, _} = error ->
-            error
-        end
+        {:error, _} = error ->
+          error
+      end
     else
       {:error, "may only edit the latest version of the post"}
     end

@@ -12,7 +12,7 @@ defmodule APReifsteck.Application do
       APReifsteck.Repo,
       {Phoenix.PubSub, [name: APReifsteck.PubSub, adapter: Phoenix.PubSub.PG2]},
       # Start the endpoint when the application starts
-      APReifsteckWeb.Endpoint,
+      APReifsteckWeb.Endpoint
       # Starts a worker by calling: APReifsteck.Worker.start_link(arg)
       # {APReifsteck.Worker, arg},
     ]

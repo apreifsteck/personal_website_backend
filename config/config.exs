@@ -33,7 +33,8 @@ config :apreifsteck, :pow,
 
 config :waffle,
   storage: Waffle.Storage.Local
-  # asset_host: "http://static.example.com"
+
+# asset_host: "http://static.example.com"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

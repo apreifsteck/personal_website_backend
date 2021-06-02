@@ -27,19 +27,24 @@ defmodule APReifsteckWeb.ImageControllerTest do
 
   setup %{conn: conn} do
     user = user_fixture()
-    conn = 
+
+    conn =
       conn
-        |> Plug.Conn.assign(:current_user, user)
-        |> put_req_header("accept", "application/json")
+      |> Plug.Conn.assign(:current_user, user)
+      |> put_req_header("accept", "application/json")
+
     # This is the conn object we'll use to represent a malicious user
     mconn = Plug.Conn.assign(conn, :current_user, random_user())
 
-    on_exit(fn -> 
+    on_exit(fn ->
       case File.ls(@test_dir) do
         {:ok, img_list} ->
           Enum.each(img_list, &File.rm/1)
-        _ -> nil
+
+        _ ->
+          nil
       end
+
       File.rmdir(@test_dir)
     end)
 
@@ -73,7 +78,7 @@ defmodule APReifsteckWeb.ImageControllerTest do
 
   describe "update image" do
     setup [:create_image]
-    
+
     test "renders image when data is valid", %{conn: conn, image: %Image{id: id} = image} do
       conn = put(conn, Routes.image_path(conn, :update, image), @update_attrs)
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
@@ -90,7 +95,11 @@ defmodule APReifsteckWeb.ImageControllerTest do
       assert json_response(conn, 422)["errors"] != %{}
     end
 
-    test "cannot update an image for a different user", %{conn: conn, mal_conn: mconn, image: image} do
+    test "cannot update an image for a different user", %{
+      conn: conn,
+      mal_conn: mconn,
+      image: image
+    } do
       assert false
     end
   end

@@ -35,15 +35,15 @@ defmodule APReifsteckWeb.ImageController do
 
   def update(conn, %{"id" => id} = attrs, user) do
     with {:ok, %Image{} = image} <- ProtectedResource.get(struct(Image), user, id),
-      {:ok, %Image{} = image} <- Media.update_image(image, attrs) do
-        render(conn, "show.json", image: image)
+         {:ok, %Image{} = image} <- Media.update_image(image, attrs) do
+      render(conn, "show.json", image: image)
     end
   end
 
-  def delete(conn, %{"id" => id }, user) do
+  def delete(conn, %{"id" => id}, user) do
     with {:ok, %Image{} = image} <- ProtectedResource.get(struct(Image), user, id),
-      {:ok, %Image{} } <- Media.delete_image(user, image) do
-        send_resp(conn, :no_content, "")
+         {:ok, %Image{}} <- Media.delete_image(user, image) do
+      send_resp(conn, :no_content, "")
     end
   end
 end

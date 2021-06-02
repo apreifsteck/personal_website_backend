@@ -13,6 +13,7 @@ defmodule APReifsteckWeb.Router do
   # Host the static images you can upload
   pipeline :static do
     plug :accepts, ["json"]
+
     plug Plug.Static,
       at: "/media",
       from: "uploads"

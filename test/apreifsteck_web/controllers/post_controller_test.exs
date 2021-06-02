@@ -81,8 +81,7 @@ defmodule APReifsteckWeb.PostControllerTest do
       posts: posts,
       authed_conn: authed_conn
     } do
-      {:ok, updated_post} =
-        Media.update_post(hd(posts),  @update_attrs)
+      {:ok, updated_post} = Media.update_post(hd(posts), @update_attrs)
 
       Media.update_post(updated_post, @update_attrs)
 
@@ -170,7 +169,10 @@ defmodule APReifsteckWeb.PostControllerTest do
       assert json_response(conn, 422)["errors"] != %{}
     end
 
-    test "renders errors when user tries to update a post that is not theirs", %{post: post, malicious_conn: mconn} do
+    test "renders errors when user tries to update a post that is not theirs", %{
+      post: post,
+      malicious_conn: mconn
+    } do
       mconn = put(mconn, Routes.post_path(mconn, :update, post), post: @update_attrs)
       assert json_response(mconn, 401)
     end
@@ -180,6 +182,7 @@ defmodule APReifsteckWeb.PostControllerTest do
     setup %{authed_conn: conn} do
       create_post(conn.assigns.current_user)
     end
+
     setup _ do
       mconn = Plug.Conn.assign(conn, :current_user, random_user())
       {:ok, malicious_conn: mconn}
@@ -195,11 +198,15 @@ defmodule APReifsteckWeb.PostControllerTest do
              )
     end
 
-    test "malicious actors cannot delete posts not their own", %{malicious_conn: mconn, post: post, authed_conn: conn} do
+    test "malicious actors cannot delete posts not their own", %{
+      malicious_conn: mconn,
+      post: post,
+      authed_conn: conn
+    } do
       mconn = delete(mconn, Routes.post_path(mconn, :delete, post))
       assert response(mconn, 401)
 
-      assert response(get(conn, Routes.post_path(conn, :show, post)), 200) 
+      assert response(get(conn, Routes.post_path(conn, :show, post)), 200)
     end
   end
 

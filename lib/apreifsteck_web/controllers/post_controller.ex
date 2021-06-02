@@ -40,15 +40,15 @@ defmodule APReifsteckWeb.PostController do
 
   def update(conn, %{"id" => id, "post" => post_params}, user) do
     with {:ok, post = %Post{}} <- ProtectedResource.get(struct(Post), user, id),
-      {:ok, post = %Post{}} <- Media.update_post(post, post_params) do
+         {:ok, post = %Post{}} <- Media.update_post(post, post_params) do
       render(conn, "show.json", post: post)
     end
   end
 
   def delete(conn, %{"id" => id}, user) do
     with {:ok, post = %Post{}} <- ProtectedResource.get(struct(Post), user, id),
-      {:ok, %Post{}} <- Media.delete_post(post) do
-        send_resp(conn, :no_content, "")
+         {:ok, %Post{}} <- Media.delete_post(post) do
+      send_resp(conn, :no_content, "")
     end
   end
 end

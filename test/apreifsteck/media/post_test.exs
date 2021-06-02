@@ -209,8 +209,7 @@ defmodule APReifsteck.PostTest do
     test "root post is the only one allowed to be deleted", %{user: user, posts: posts} do
       [_head | [middle | _last]] = posts
 
-      assert {:error, "you can only delete posts from the root post"} =
-               Media.delete_post(middle)
+      assert {:error, "you can only delete posts from the root post"} = Media.delete_post(middle)
     end
 
     test "deleting root post does a cascading delete on edits", %{
