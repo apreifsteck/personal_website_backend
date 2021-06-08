@@ -31,8 +31,8 @@ defmodule APReifsteckWeb.SessionControllerTest do
       conn = post(conn, Routes.session_path(conn, :create, @valid_params))
 
       assert json = json_response(conn, 200)
-      assert json["data"]["access_token"]
-      assert json["data"]["renewal_token"]
+      assert json["data"]["accessToken"]
+      assert json["data"]["refreshToken"]
     end
 
     test "with invalid params", %{conn: conn} do
@@ -66,8 +66,8 @@ defmodule APReifsteckWeb.SessionControllerTest do
         |> post(Routes.session_path(conn, :renew))
 
       assert json = json_response(conn, 200)
-      assert json["data"]["access_token"]
-      assert json["data"]["renewal_token"]
+      assert json["data"]["accessToken"]
+      assert json["data"]["refreshToken"]
     end
 
     test "with invalid authorization header", %{conn: conn} do

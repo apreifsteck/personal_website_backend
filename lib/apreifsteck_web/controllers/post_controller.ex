@@ -22,7 +22,7 @@ defmodule APReifsteckWeb.PostController do
     render(conn, "index.json", posts: posts)
   end
 
-  def create(conn, post_params, user) do
+  def create(conn, %{"post" => post_params}, user) do
     with {:ok, %Post{} = post} <- Media.create_post(post_params, user) do
       conn
       |> put_status(:created)

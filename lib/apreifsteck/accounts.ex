@@ -37,6 +37,13 @@ defmodule APReifsteck.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  def get_user(id) do
+    case user = Repo.get(User, id) do
+      nil -> {:error, :not_found}
+      _ -> {:ok, user}
+    end
+  end
+
   @doc """
 
   """

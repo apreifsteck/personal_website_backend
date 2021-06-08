@@ -41,7 +41,7 @@ defmodule APReifsteck.CommentTest do
 
     test "on an edited post registers that comment to the root post", context do
       {:ok, edited_post} =
-        Media.update_post(context.post.id, context.post_author, %{"body" => "a new post body"})
+        Media.update_post(context.post, %{"body" => "a new post body"})
 
       attrs = Map.merge(@valid_attrs, %{"author_id" => context.comment_author.id})
       {:ok, comment} = Media.create_comment(edited_post, attrs)
@@ -70,7 +70,7 @@ defmodule APReifsteck.CommentTest do
 
     test "cannot create a comment if the post disallows it", context do
       {:ok, post} =
-        Media.update_post(context.post.id, context.post_author, %{"enable_comments" => false})
+        Media.update_post(context.post, %{"enable_comments" => false})
 
       attrs = Map.merge(@valid_attrs, %{"author_id" => context.comment_author.id})
       {:error, msg} = Media.create_comment(post, attrs)

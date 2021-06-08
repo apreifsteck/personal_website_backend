@@ -133,30 +133,17 @@ defmodule APReifsteck.Media do
   def create_post(_params, nil), do: {:error, "must supply a user when creating a post"}
 
   def create_post(params, user) do
+    # recieve list of ids of images posted
+    # %{"img_ids" => _img_ids} = params
+    # parse out links of posts
+    # _links = Regex.scan(~r/\[img\]\((https?:.*)\)/, params["body"])
+    # Diff the list
+    # Delete those images not in the list
     user
     |> Ecto.build_assoc(:posts)
     |> Post.changeset(params)
     |> Repo.insert()
   end
-
-  # TODO: might want to put this authentication into another function that
-  # I somehow pipe the other functions through? I don't want to get hung up on a ton
-  # of refactoring though.
-  # def get_post(id, user) do
-  #   post =
-  #     from(p in Post,
-  #       where: p.id == ^id and p.user_id == ^user.id
-  #     )
-  #     |> Repo.one()
-
-  #   case post do
-  #     nil ->
-  #       {:error, "must ask for post ID of a post from the given user"}
-
-  #     _ ->
-  #       post
-  #   end
-  # end
 
   def get_post(id) do
     case post = Repo.get(Post, id) do
@@ -200,7 +187,7 @@ defmodule APReifsteck.Media do
       nil ->
         post
 
-      # otherwise we want to recurse to the previous post in the edit list 
+      # otherwise we want to recurse to the previous post in the edit list
       prev_post ->
         get_root_post(prev_post)
     end
@@ -246,102 +233,6 @@ defmodule APReifsteck.Media do
     end
   end
 
-  ######### POSTS IN EDIT ##########
-  alias APReifsteck.Media.PostInEdit
-
-  @doc """
-  Returns the list of posts_in_edit.
-
-  ## Examples
-
-      iex> list_posts_in_edit()
-      [%PostInEdit{}, ...]
-
-  """
-  def list_posts_in_edit do
-    Repo.all(PostInEdit)
-  end
-
-  @doc """
-  Gets a single post_in_edit.
-
-  Raises `Ecto.NoResultsError` if the Post in edit does not exist.
-
-  ## Examples
-
-      iex> get_post_in_edit!(123)
-      %PostInEdit{}
-
-      iex> get_post_in_edit!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_post_in_edit!(id), do: Repo.get!(PostInEdit, id)
-
-  @doc """
-  Creates a post_in_edit.
-
-  ## Examples
-
-      iex> create_post_in_edit(%{field: value})
-      {:ok, %PostInEdit{}}
-
-      iex> create_post_in_edit(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_post_in_edit(attrs \\ %{}) do
-    %PostInEdit{}
-    |> PostInEdit.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a post_in_edit.
-
-  ## Examples
-
-      iex> update_post_in_edit(post_in_edit, %{field: new_value})
-      {:ok, %PostInEdit{}}
-
-      iex> update_post_in_edit(post_in_edit, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_post_in_edit(%PostInEdit{} = post_in_edit, attrs) do
-    post_in_edit
-    |> PostInEdit.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a post_in_edit.
-
-  ## Examples
-
-      iex> delete_post_in_edit(post_in_edit)
-      {:ok, %PostInEdit{}}
-
-      iex> delete_post_in_edit(post_in_edit)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_post_in_edit(%PostInEdit{} = post_in_edit) do
-    Repo.delete(post_in_edit)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking post_in_edit changes.
-
-  ## Examples
-
-      iex> change_post_in_edit(post_in_edit)
-      %Ecto.Changeset{source: %PostInEdit{}}
-
-  """
-  def change_post_in_edit(%PostInEdit{} = post_in_edit) do
-    PostInEdit.changeset(post_in_edit, %{})
-  end
 
   ###### COMMENTS ########
   alias APReifsteck.Media.Comment

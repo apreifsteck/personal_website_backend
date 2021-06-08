@@ -74,21 +74,23 @@ defmodule APReifsteck.ImageTest do
 
   describe "delete/2" do
     setup do
-      {:ok, user: user_fixture()}
+      user = user_fixture()
+      {:ok, user: user, image: image_fixture(user)}
     end
 
     @tag :delete_image
-    test "delete_image/2 deletes the image from the database", %{user: user} do
-      image = image_fixture(user)
+    test "delete_image/2 deletes the image from the database", %{user: user, image: image} do
       assert {:ok, %Image{}} = Media.delete_image(user, image)
       assert_raise Ecto.NoResultsError, fn -> Media.get_image!(image.id) end
     end
 
     @tag :delete_image
-    test "delete_image/2 deletes the image from the filesystem", %{user: user} do
-      image = image_fixture(user)
-      img_path = Uploaders.Image.url({image.filename, user})
+    test "delete_image/2 deletes the image from the filesystem", %{user: user, image: image} do
+      img_path = "." <> Uploaders.Image.url({image.filename, user})
+      assert File.exists?(img_path)
+
       assert {:ok, %Image{}} = Media.delete_image(user, image)
+      :timer.sleep(200)
       refute File.exists?(img_path)
     end
   end

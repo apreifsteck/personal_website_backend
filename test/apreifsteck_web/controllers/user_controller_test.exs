@@ -21,7 +21,9 @@ defmodule APReifsteckWeb.UserControllerTest do
     config = [otp_app: :apreifsteck]
     post(conn, Routes.registration_path(conn, :create, @create_params))
     user = Accounts.get_user_by!(uname: "test")
-    conn = APReifsteckWeb.APIAuthPlug.do_create(conn, user, config)
+    conn =
+      APReifsteckWeb.APIAuthPlug.do_create(conn, user, config)
+      |> Plug.Conn.assign(:current_user, user)
 
     {:ok, conn: put_req_header(conn, "accept", "application/json"), user: user}
   end
@@ -36,7 +38,7 @@ defmodule APReifsteckWeb.UserControllerTest do
 
   describe "render user" do
     test "renders user when data is valid", %{conn: conn, user: user} do
-      conn = get(conn, Routes.user_path(conn, :show, user.id))
+      conn = get(conn, Routes.user_path(conn, :show, user.uname))
 
       assert %{
                "id" => id,
@@ -62,15 +64,17 @@ defmodule APReifsteckWeb.UserControllerTest do
   @invalid_attrs %{email: nil, name: nil, password_hash: nil, uname: nil}
 
   describe "update user" do
-    test "renders user when data is valid", %{
-      conn: conn,
-      user: %User{id: id, password_hash: _hash} = user
-    } do
-      resp_conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
+    setup context do
+      %User{id: id, password_hash: hash} = context.conn.assigns.current_user
+      {:ok, id: id, password_hash: hash}
+    end
 
+    test "renders user when data is valid", %{conn: conn, id: id, password_hash: hash} do
+      resp_conn = put(conn, Routes.user_path(conn, :update, conn.assigns.current_user), user: @update_attrs)
+      id = conn.assigns.current_user.id
       assert %{"id" => ^id} = json_response(resp_conn, 200)["data"]
 
-      conn = get(conn, Routes.user_path(conn, :show, id))
+      conn = get(conn, Routes.user_path(conn, :show, @update_attrs.uname))
 
       assert %{
                "id" => id,
@@ -80,30 +84,22 @@ defmodule APReifsteckWeb.UserControllerTest do
              } = json_response(conn, 200)["data"]
     end
 
-    test "updating non-password fields keeps old password", %{
-      conn: conn,
-      user: %User{id: id, password_hash: hash} = user
-    } do
-      conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
+    test "updating non-password fields keeps old password", %{conn: conn, id: id, password_hash: hash} do
+      conn = put(conn, Routes.user_path(conn, :update, conn.assigns.current_user), user: @update_attrs)
       assert response(conn, 200)
       assert ^hash = Accounts.get_user!(id).password_hash
     end
 
-    test "renders errors when password_confirmation and current_password field not present when changing password",
-         %{
-           conn: conn,
-           user: %User{id: id, password_hash: hash} = user
-         } do
+    test "renders errors when password_confirmation and current_password field not present when changing password", %{conn: conn, id: id, password_hash: hash} do
       attrs = @update_attrs |> Map.put(:password, "newPassword")
-      conn = put(conn, Routes.user_path(conn, :update, user), user: attrs)
+      conn = put(conn, Routes.user_path(conn, :update, conn.assigns.current_user), user: attrs)
       updated_user? = Accounts.get_user!(id)
       assert ^hash = updated_user?.password_hash
       assert conn.status >= 400
     end
 
     test "updates password with valid input", %{
-      conn: conn,
-      user: %User{id: id, password_hash: hash} = user
+      conn: conn, id: id, password_hash: hash
     } do
       attrs =
         @update_attrs
@@ -113,26 +109,26 @@ defmodule APReifsteckWeb.UserControllerTest do
           current_password: @password
         })
 
-      conn = put(conn, Routes.user_path(conn, :update, user), user: attrs)
+      conn = put(conn, Routes.user_path(conn, :update, conn.assigns.current_user), user: attrs)
       updated_user = Accounts.get_user!(id)
       assert hash != updated_user.password_hash
       assert conn.status == 200
     end
 
     test "renders errors when data is invalid", %{conn: conn, user: user} do
-      conn = put(conn, Routes.user_path(conn, :update, user), user: @invalid_attrs)
+      conn = put(conn, Routes.user_path(conn, :update, conn.assigns.current_user), user: @invalid_attrs)
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
 
   describe "delete user" do
-    test "deletes chosen user", %{conn: conn, user: user} do
+    test "deletes chosen user", %{conn: conn} do
+      user = conn.assigns.current_user
       resp_conn = delete(conn, Routes.user_path(conn, :delete, user))
       assert response(resp_conn, 204)
 
-      assert_error_sent 404, fn ->
-        get(conn, Routes.user_path(conn, :show, user))
-      end
+      conn = get(conn, Routes.user_path(conn, :show, user))
+      assert response(conn, 404)
     end
   end
 end

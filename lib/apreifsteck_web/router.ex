@@ -37,6 +37,8 @@ defmodule APReifsteckWeb.Router do
     scope "/users" do
       pipe_through :api
       get "/:uname", UserController, :show
+      pipe_through :api_protected
+      resources "/", UserController, only: [:update, :delete]
     end
 
     scope "/posts" do

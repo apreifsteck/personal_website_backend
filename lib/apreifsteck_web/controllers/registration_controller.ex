@@ -9,15 +9,14 @@ defmodule APReifsteckWeb.RegistrationController do
 
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"user" => user_params}) do
-    user_params
-
     conn
     |> Pow.Plug.create_user(user_params)
     |> case do
       {:ok, _user, conn} ->
         json(conn, %{
-          access_token: conn.private[:api_access_token],
-          renewal_token: conn.private[:api_renewal_token]
+          accessToken: conn.private[:api_access_token],
+          refreshToken: conn.private[:api_renewal_token],
+          # userToken: conn.private.user_token
         })
 
       {:error, changeset, conn} ->

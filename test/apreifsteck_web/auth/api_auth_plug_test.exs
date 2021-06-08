@@ -54,5 +54,7 @@ defmodule APReifsteckWeb.APIAuthPlugTest do
              APIAuthPlug.renew(with_auth_header(conn, renewed_renewal_token), @pow_config)
   end
 
+  # TODO: Test to see if it works for the user_token
+
   defp with_auth_header(conn, token), do: Plug.Conn.put_req_header(conn, "authorization", token)
 end

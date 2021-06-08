@@ -59,15 +59,20 @@ defmodule APReifsteckWeb.ImageControllerTest do
   # end
 
   describe "create image" do
-    test "renders image when data is valid", %{conn: conn} do
+    test "renders image when data is valid", %{conn: conn, user: user} do
       conn = post(conn, Routes.image_path(conn, :create), @create_attrs)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, Routes.image_path(conn, :show, id))
 
       assert %{
-               "id" => id
+               "id" => id,
+               "filename" => filename,
+               "url" => url
              } = json_response(conn, 200)["data"]
+      # url = "/media/test/#{user.id}/#{filename}"
+      conn = get(conn, url)
+      assert response(conn, 200)
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

@@ -33,10 +33,15 @@ defmodule APReifsteck.Uploaders.Image do
     "#{scope.id}_#{file.filename}"
   end
 
+  # def filename(file, scope) do
+  #   file_name = Path.basename(file.filename, Path.extname(file.filename))
+  #   "#{scope.id}_#{file_name}"
+  # end
+
   # Override the storage directory:
   def storage_dir(_version, {_file, scope}) do
     if Mix.env() == :test do
-      "uploads/test"
+      "uploads/test/#{scope.id}"
     else
       "uploads/user/#{scope.id}"
     end

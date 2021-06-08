@@ -22,8 +22,8 @@ defmodule APReifsteckWeb.RegistrationControllerTest do
       conn = post(conn, Routes.registration_path(conn, :create, @valid_params))
 
       assert json = json_response(conn, 200)
-      assert json["access_token"]
-      assert json["renewal_token"]
+      assert json["accessToken"]
+      assert json["refreshToken"]
     end
 
     test "with invalid params", %{conn: conn} do

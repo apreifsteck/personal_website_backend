@@ -12,7 +12,7 @@ defmodule APReifsteck.Media.Image do
   end
 
   @doc false
-  def changeset(image, _, attrs = %{"image" => nil}) do
+  def changeset(image, _,%{"image" => nil}) do
     image
     |> change()
     |> add_error(:missing_image, "Must have an image object to create an image")
@@ -23,14 +23,21 @@ defmodule APReifsteck.Media.Image do
       attrs
       |> restructure_attrs()
       |> store_image(user)
-
     image
     |> cast(attrs, [:title, :description, :filename])
     |> validate_required([:filename])
     |> assoc_constraint(:user)
-    |> unique_constraint(:filename)
+    |> unique_constraint([:filename, :user_id])
   end
 
+  @spec update_changeset(
+          {map, any}
+          | %{
+              :__struct__ => atom | %{:__changeset__ => any, optional(any) => any},
+              optional(any) => any
+            },
+          map
+        ) :: Ecto.Changeset.t()
   @doc """
   The changeset operation used for updating an image. This is so the filename or associated user can't be changed.
   """
@@ -57,9 +64,7 @@ defmodule APReifsteck.Media.Image do
   end
 
   defp store_image(%{image: image} = attrs, user) do
-    {:ok, _} = Uploaders.Image.store({image, user})
-    filename = Uploaders.Image.filename(image, user)
-
+    {:ok, filename} = Uploaders.Image.store({image, user})
     attrs
     |> Map.put(:filename, filename)
     |> Map.pop!(:image)

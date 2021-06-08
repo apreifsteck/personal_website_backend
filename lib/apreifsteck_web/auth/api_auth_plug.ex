@@ -34,11 +34,14 @@ defmodule APReifsteckWeb.APIAuthPlug do
     store_config = store_config(config)
     access_token = Pow.UUID.generate()
     renewal_token = Pow.UUID.generate()
+    # user_token = create_user_token(conn, user)
 
     conn =
       conn
       |> Conn.put_private(:api_access_token, sign_token(conn, access_token, config))
       |> Conn.put_private(:api_renewal_token, sign_token(conn, renewal_token, config))
+      # For Channel authentication
+      # |> Conn.put_private(:user_token, user_token)
 
     CredentialsCache.put(store_config, access_token, {user, [renewal_token: renewal_token]})
 
@@ -124,4 +127,9 @@ defmodule APReifsteckWeb.APIAuthPlug do
 
     [backend: backend]
   end
+
+  defp create_user_token(conn, user) do
+    Phoenix.Token.sign(conn, "user socket", user.id)
+  end
+
 end

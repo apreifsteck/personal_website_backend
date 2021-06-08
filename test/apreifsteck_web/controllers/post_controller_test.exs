@@ -6,9 +6,9 @@ defmodule APReifsteckWeb.PostControllerTest do
 
   # TODO: test that CUD are user-only, but read actions can be unathenticated
   # TODO: test error path for each method (not just happy path)
-  @create_attrs %{"title" => "(TEST) post", "body" => "HEY!!!!"}
+  @create_attrs %{"title" => "(TEST) post", "body" => "HEY!!!!", "img_ids" => []}
   @update_attrs %{"body" => "SALUTATIONS!!!"}
-  @invalid_attrs %{"body" => nil, "title" => nil}
+  @invalid_attrs %{"body" => nil, "title" => nil, "img_ids" => nil}
 
   defp batch_create(user, attrs_list) when attrs_list != [] do
     [head | tail] = attrs_list
@@ -22,7 +22,7 @@ defmodule APReifsteckWeb.PostControllerTest do
     Repo.all(Post)
     |> Repo.preload(:user)
 
-    APReifsteck.Repo.preload(user, :posts).posts
+    Repo.preload(user, :posts).posts
   end
 
   def fixture(:posts, user) do
@@ -31,7 +31,7 @@ defmodule APReifsteckWeb.PostControllerTest do
 
     attrs =
       for p <- Enum.zip(titles, bodies) do
-        %{"title" => elem(p, 0), "body" => elem(p, 1), "enable_comments" => false}
+        %{"title" => elem(p, 0), "body" => elem(p, 1), "enable_comments" => false, "img_ids" => []}
       end
 
     batch_create(user, attrs)
@@ -148,7 +148,7 @@ defmodule APReifsteckWeb.PostControllerTest do
     end
 
     setup context do
-      mconn = Plug.Conn.assign(conn, :current_user, random_user())
+      mconn = Plug.Conn.assign(Phoenix.ConnTest.build_conn(), :current_user, random_user())
       {:ok, malicious_conn: mconn}
     end
 
@@ -184,7 +184,7 @@ defmodule APReifsteckWeb.PostControllerTest do
     end
 
     setup _ do
-      mconn = Plug.Conn.assign(conn, :current_user, random_user())
+      mconn = Plug.Conn.assign(Phoenix.ConnTest.build_conn(), :current_user, random_user())
       {:ok, malicious_conn: mconn}
     end
 

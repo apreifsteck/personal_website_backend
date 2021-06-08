@@ -14,7 +14,8 @@ defmodule APReifsteckWeb.SessionController do
         json(conn, %{
           data: %{
             accessToken: conn.private.api_access_token,
-            refreshToken: conn.private.api_renewal_token
+            refreshToken: conn.private.api_renewal_token,
+            # userToken: conn.private.user_token
           }
         })
 
@@ -40,8 +41,9 @@ defmodule APReifsteckWeb.SessionController do
       {conn, _user} ->
         json(conn, %{
           data: %{
-            access_token: conn.private.api_access_token,
-            renewal_token: conn.private.api_renewal_token
+            accessToken: conn.private.api_access_token,
+            refreshToken: conn.private.api_renewal_token,
+            # userToken: conn.private.user_token
           }
         })
     end

@@ -6,11 +6,10 @@ defmodule APReifsteck.Repo.Migrations.CreateImages do
       add(:title, :string)
       add(:description, :string)
       add(:filename, :string, null: false)
-      add(:user_id, references(:users, on_delete: :delete_all))
+      add(:user_id, references(:users, on_delete: :delete_all), null: false)
       timestamps()
     end
 
     create unique_index(:images, [:filename, :user_id])
-    create index(:images, [:user_id])
   end
 end

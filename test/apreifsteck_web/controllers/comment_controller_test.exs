@@ -43,7 +43,7 @@ defmodule APReifsteckWeb.CommentControllerTest do
 
   def fixture(:post) do
     {:ok, post} =
-      Media.create_post(%{"title" => "Post Title", "body" => "Post Body"}, random_user())
+      Media.create_post(%{"title" => "Post Title", "body" => "Post Body", "img_ids" => []}, random_user())
 
     post
   end
