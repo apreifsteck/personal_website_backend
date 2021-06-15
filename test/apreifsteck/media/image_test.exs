@@ -13,7 +13,8 @@ defmodule APReifsteck.ImageTest do
     "image" => %Plug.Upload{
       path: "test/test_assets/images/test_img.png",
       filename: "test_img.png"
-    }
+    },
+    "is_gallery_img" => true
   }
   @update_attrs %{
     "title" => "Some other title",
@@ -37,6 +38,7 @@ defmodule APReifsteck.ImageTest do
     @tag :create_image
     test "create_image/1 with valid data creates a image", %{user: user} do
       assert {:ok, %Image{} = image} = Media.create_image(user, @valid_attrs)
+      assert image.is_gallery_img == true
     end
 
     test "create_image/1 with invalid data returns error changeset", %{user: user} do
@@ -80,7 +82,7 @@ defmodule APReifsteck.ImageTest do
 
     @tag :delete_image
     test "delete_image/2 deletes the image from the database", %{user: user, image: image} do
-      assert {:ok, %Image{}} = Media.delete_image(user, image)
+      assert {:ok, %Image{}} = Media.delete_image(image)
       assert_raise Ecto.NoResultsError, fn -> Media.get_image!(image.id) end
     end
 
@@ -89,7 +91,7 @@ defmodule APReifsteck.ImageTest do
       img_path = "." <> Uploaders.Image.url({image.filename, user})
       assert File.exists?(img_path)
 
-      assert {:ok, %Image{}} = Media.delete_image(user, image)
+      assert {:ok, %Image{}} = Media.delete_image(image)
       :timer.sleep(200)
       refute File.exists?(img_path)
     end

@@ -11,7 +11,8 @@ defmodule APReifsteckWeb.ImageControllerTest do
     "image" => %Plug.Upload{
       path: "test/test_assets/images/test_img.png",
       filename: "test_img.png"
-    }
+    },
+    "is_gallery_img" => true
   }
   @update_attrs %{"description" => "An updated description"}
   @invalid_attrs %{
@@ -51,12 +52,15 @@ defmodule APReifsteckWeb.ImageControllerTest do
     {:ok, conn: conn, mal_conn: mconn, user: user}
   end
 
-  # describe "index" do
-  #   test "lists all images", %{conn: conn} do
-  #     conn = get(conn, Routes.image_path(conn, :index))
-  #     assert json_response(conn, 200)["data"] == []
-  #   end
-  # end
+  describe "index" do
+    setup [:create_image]
+
+    test "lists all user images", %{conn: conn, user: user, image: image} do
+      # IO.inspect(image)
+      conn = get(conn, Routes.image_path(conn, :index, %{"user_id" => user.id, "is_gallery_img" => true}))
+      assert json_response(conn, 200)["data"] != []
+    end
+  end
 
   describe "create image" do
     test "renders image when data is valid", %{conn: conn, user: user} do
@@ -68,11 +72,13 @@ defmodule APReifsteckWeb.ImageControllerTest do
       assert %{
                "id" => id,
                "filename" => filename,
-               "url" => url
+               "url" => url,
+               "is_gallery_img" => is_gallery_img
              } = json_response(conn, 200)["data"]
       # url = "/media/test/#{user.id}/#{filename}"
       conn = get(conn, url)
       assert response(conn, 200)
+      assert is_gallery_img == true
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

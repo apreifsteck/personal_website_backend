@@ -7,6 +7,7 @@ defmodule APReifsteck.Repo.Migrations.CreateImages do
       add(:description, :string)
       add(:filename, :string, null: false)
       add(:user_id, references(:users, on_delete: :delete_all), null: false)
+      add(:is_gallery_img, :boolean, default: false)
       timestamps()
     end
 

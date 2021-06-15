@@ -23,8 +23,13 @@ defmodule APReifsteck.Media do
     Repo.all(Image)
   end
 
-  def list_user_images(uid) do
-    from(v in Image, where: v.user_id == ^uid)
+  def list_user_images(uid, params) do
+    query = from(img in Image, where: img.user_id == ^uid)
+    params
+    |> Enum.map(fn {query_param, param_val} -> {String.to_existing_atom(query_param), param_val} end)
+    |> Enum.reduce(query, fn {q_param, q_value}, acc_query ->
+      acc_query |> where([q], field(q, ^q_param) == ^q_value)
+    end)
     |> Repo.all()
   end
 
@@ -102,7 +107,8 @@ defmodule APReifsteck.Media do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_image(%User{} = user, %Image{} = image) do
+  def delete_image(%Image{} = image) do
+    user = image |> Repo.preload(:user) |> Map.fetch!(:user)
     spawn(fn -> Uploaders.Image.delete({image.filename, user}) end)
     Repo.delete(image)
   end
@@ -133,16 +139,46 @@ defmodule APReifsteck.Media do
   def create_post(_params, nil), do: {:error, "must supply a user when creating a post"}
 
   def create_post(params, user) do
-    # recieve list of ids of images posted
-    # %{"img_ids" => _img_ids} = params
-    # parse out links of posts
-    # _links = Regex.scan(~r/\[img\]\((https?:.*)\)/, params["body"])
-    # Diff the list
+    # parse out links of images in the post that made the final cut
+    get_imgs_from_post_body(params["body"] || "")
+    # Diff the list with those from the images that were posted during the making of the post
     # Delete those images not in the list
+     |> prune_unused_uploads(params["img_ids"] || [])
     user
     |> Ecto.build_assoc(:posts)
     |> Post.changeset(params)
     |> Repo.insert()
+  end
+
+  def prune_unused_uploads(referenced_imgs, img_ids) when length(img_ids) >= length(referenced_imgs) do
+    # Delete any images that were uploaded during the creation of a post, but are not present in the
+    # final submission
+    alias APReifsteck.Uploaders.Image, as: Uploader
+    unused_imgs =
+      from(i in Image,
+        where: i.id in ^img_ids,
+        select: [:filename, :user_id, :id],
+      )
+      |> Repo.all()
+      # We have to do this stupid filename translation becuase of the way waffle 'calculates' file names
+      |> Enum.map(fn img ->
+        Map.put(img, :filename, Uploader.filename(img))
+      end)
+      # Find any images that are not referenced in the post
+      |> Enum.filter(fn img -> !Enum.member?(referenced_imgs, img.filename) end)
+      |> Enum.map(&(&1.id))
+
+      from(i in Image,
+      where: i.id in ^unused_imgs
+    )
+    # Then delete them
+    |> Repo.delete_all()
+  end
+
+  def get_imgs_from_post_body(body) do
+    Regex.scan(~r/\[img\]\(https?:.*\/media\/\w+\/\d+\/(.*)\)/, body)
+      |> Enum.map(&tl/1)
+      |> Enum.map(&hd/1)
   end
 
   def get_post(id) do

@@ -15,6 +15,13 @@ defmodule APReifsteckWeb.ImageView do
     url =
       Uploader.url({image.filename, %{id: image.user_id}})
       |> String.replace_prefix("/uploads", "/media")
-    %{id: image.id, filename: image.filename, description: image.description, title: image.title, url: url}
+    %{
+      id: image.id,
+      filename: image.filename,
+      description: image.description,
+      title: image.title,
+      url: url,
+      is_gallery_img: image.is_gallery_img
+    }
   end
 end

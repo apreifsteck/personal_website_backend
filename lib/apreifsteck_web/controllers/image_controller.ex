@@ -14,8 +14,8 @@ defmodule APReifsteckWeb.ImageController do
   end
 
   def index(conn, %{"user_id" => id} = params, _user) do
-    images = Media.list_user_images(id)
-    # TODO: render something
+    params = Map.delete(params, "user_id")
+    images = Media.list_user_images(id, params)
     render(conn, "index.json", images: images)
   end
 
@@ -42,7 +42,7 @@ defmodule APReifsteckWeb.ImageController do
 
   def delete(conn, %{"id" => id}, user) do
     with {:ok, %Image{} = image} <- ProtectedResource.get(struct(Image), user, id),
-         {:ok, %Image{}} <- Media.delete_image(user, image) do
+         {:ok, %Image{}} <- Media.delete_image(image) do
       send_resp(conn, :no_content, "")
     end
   end

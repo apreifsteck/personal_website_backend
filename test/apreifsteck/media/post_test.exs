@@ -8,13 +8,15 @@ defmodule APReifsteck.PostTest do
 
   @valid_attrs %{
     "title" => "simple title",
-    "body" => "<h1>Hello</h1>",
-    "enable_comments" => false
+    "body" => "### Hello\n",
+    "enable_comments" => false,
+    "img_ids" => []
   }
 
   @invalid_attrs %{
     "title" => nil,
-    "body" => nil
+    "body" => nil,
+    "img_ids" => nil
   }
 
   describe "create_post" do
@@ -94,6 +96,38 @@ defmodule APReifsteck.PostTest do
       {:ok, user: user, posts: posts, root_post: root_post}
     end
 
+    setup context do
+      alias APReifsteck.Uploaders.Image, as: Uploader
+      img_loc = "./test/test_assets/images/"
+      uploaded_images =
+        File.ls!(img_loc)
+        |> Enum.map(&(%{
+            "title" => random_string(20),
+            "description" => "",
+            "image" => %Plug.Upload{
+              path: img_loc <> &1,
+              filename: String.split(&1, "/") |> List.last()
+            }
+          }))
+        |> Enum.map(&(Media.create_image(context.user, &1)))
+        |> Enum.map(&(elem(&1, 1)))
+
+      links =
+        uploaded_images
+        |> Enum.map(&(Map.put(&1, :filename, Uploader.filename(&1))))
+        |> Enum.map(&("[img](http://localhost:4000/media/test/#{context.user.id}/#{&1.filename})"))
+
+      post_body = "## Hello\nSome text\n" <> Enum.join(links, "\n")
+      {:ok, post} = Media.create_post(%{
+        "title" => "Test title",
+        "body" => post_body,
+        "img_ids" => uploaded_images |> Enum.map(&(&1.id)),
+        "enable_comments" => false
+      }, context.user)
+      # on_exit(fn -> File.rm!("./uploads/test") end)
+      {:ok, links_post: post, uploaded_images: uploaded_images}
+    end
+
     test "get_latest_edit gets last edit", %{user: user, posts: posts, root_post: root_post} do
       [head | [second | tail]] = posts
       [tail | _] = tail
@@ -109,6 +143,22 @@ defmodule APReifsteck.PostTest do
     test "get_root_post gets the root post", %{user: user, posts: posts, root_post: root_post} do
       [p1, p2, p3] = posts
       assert Media.get_root_post(p3).id == root_post.id
+    end
+
+    @tag :helper_method
+    test "process_post_text", %{user: user, links_post: post, uploaded_images: images} do
+      alias APReifsteck.Media.Image
+      body_img_names = Media.get_imgs_from_post_body(post.body)
+      body_img_names
+      |> hd()
+      |> List.wrap()
+      |> Media.prune_unused_uploads(Enum.map(images, &(&1.id)))
+
+      overlap =
+        images
+        |>Enum.map(&(Enum.member?(Repo.all(Image), &1)))
+      assert false in overlap
+
     end
   end
 
@@ -224,4 +274,6 @@ defmodule APReifsteck.PostTest do
       assert Repo.get(Post, hd(leaf).id) == nil
     end
   end
+
+
 end

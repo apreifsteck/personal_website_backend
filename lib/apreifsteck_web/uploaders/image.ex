@@ -33,6 +33,10 @@ defmodule APReifsteck.Uploaders.Image do
     "#{scope.id}_#{file.filename}"
   end
 
+  def filename(%APReifsteck.Media.Image{} = img) do
+    "#{img.user_id}_#{img.filename}"
+  end
+
   # def filename(file, scope) do
   #   file_name = Path.basename(file.filename, Path.extname(file.filename))
   #   "#{scope.id}_#{file_name}"

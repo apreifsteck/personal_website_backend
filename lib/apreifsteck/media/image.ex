@@ -7,6 +7,7 @@ defmodule APReifsteck.Media.Image do
     field :title, :string
     field :description, :string
     field :filename, :string
+    field :is_gallery_img, :boolean, default: false
     belongs_to :user, APReifsteck.Accounts.User
     timestamps()
   end
@@ -24,7 +25,7 @@ defmodule APReifsteck.Media.Image do
       |> restructure_attrs()
       |> store_image(user)
     image
-    |> cast(attrs, [:title, :description, :filename])
+    |> cast(attrs, [:title, :description, :filename, :is_gallery_img])
     |> validate_required([:filename])
     |> assoc_constraint(:user)
     |> unique_constraint([:filename, :user_id])
@@ -58,7 +59,7 @@ defmodule APReifsteck.Media.Image do
   end
 
   defp restructure_attrs(%{} = attrs) do
-    Map.take(attrs, ["image", "description", "title"])
+    Map.take(attrs, ["image", "description", "title", "is_gallery_img"])
     |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
     |> Enum.into(%{})
   end
